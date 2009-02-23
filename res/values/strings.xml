@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--##################################################################-->
+<!--                                                                  -->
+<!--     CSCI-546, Spring 2009 Assignment III Solution by Group #7    -->
+<!--                                                                  -->
+<!--     Group Members: Chang, Chin-Kai      chinkaic@usc.edu         -->
+<!--                    Moon, Ji Hyun        jihyunmo@usc.edu         -->
+<!--                    Patlolla, Avinash    patlolla@usc.edu         -->
+<!--                    Viswanathan, Manu    mviswana@usc.edu         -->
+<!--                                                                  -->
+<!--##################################################################-->
+<!--                                                                  -->
+<!-- This file specifies various string resources used by the photo   -->
+<!-- manager application for the Android/gPhone platform that tags    -->
+<!-- new pictures taken with the camera with the current GPS coordi-  -->
+<!-- nates and optional audio.                                        -->
+<!--                                                                  -->
+<!--##################################################################-->
+
+<resources>
+   <string name="app_name">Grp 7 Assign. III</string>
+</resources>

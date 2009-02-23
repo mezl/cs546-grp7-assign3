@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--##################################################################-->
+<!--                                                                  -->
+<!--     CSCI-546, Spring 2009 Assignment III Solution by Group #7    -->
+<!--                                                                  -->
+<!--     Group Members: Chang, Chin-Kai      chinkaic@usc.edu         -->
+<!--                    Moon, Ji Hyun        jihyunmo@usc.edu         -->
+<!--                    Patlolla, Avinash    patlolla@usc.edu         -->
+<!--                    Viswanathan, Manu    mviswana@usc.edu         -->
+<!--                                                                  -->
+<!--##################################################################-->
+<!--                                                                  -->
+<!-- This file specifies the Android manifest for a photo manager     -->
+<!-- application that tags new pictures taken on the gPhone with the  -->
+<!-- current GPS coordinates and optional audio.                      -->
+<!--                                                                  -->
+<!--##################################################################-->
+
+<!--===================== MANIFEST BOILERPLATE =======================-->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="cs546.group7"
+          android:versionCode="1"
+          android:versionName="1.0">
+
+<!--=========== ACTIVITIES FOR PHOTO MANAGER APPLICATION =============-->
+
+<application android:label="@string/app_name">
+
+<!-- The application's main screen -->
+<activity android:name=".AssignmentThree"
+          android:label="@string/app_name">
+   <intent-filter>
+      <action android:name="android.intent.action.MAIN"/>
+      <category android:name="android.intent.category.LAUNCHER"/>
+   </intent-filter>
+</activity>
+
+</application>
+
+<!--========================== PERMISSIONS ===========================-->
+
+
+
+<!--===================== MANIFEST BOILERPLATE =======================-->
+
+</manifest>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--##################################################################-->
+<!--                                                                  -->
+<!--     CSCI-546, Spring 2009 Assignment III Solution by Group #7    -->
+<!--                                                                  -->
+<!--     Group Members: Chang, Chin-Kai      chinkaic@usc.edu         -->
+<!--                    Moon, Ji Hyun        jihyunmo@usc.edu         -->
+<!--                    Patlolla, Avinash    patlolla@usc.edu         -->
+<!--                    Viswanathan, Manu    mviswana@usc.edu         -->
+<!--                                                                  -->
+<!--##################################################################-->
+<!--                                                                  -->
+<!-- This file specifies the user interface for the main screen of a  -->
+<!-- photo manager application that tags new pictures taken on the    -->
+<!-- gPhone with the current GPS coordinates and optional audio.      -->
+<!--                                                                  -->
+<!--##################################################################-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent">
+
+<TextView android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:text="Hello World, AssignmentThree"/>
+
+</LinearLayout>
+
