@@ -25,6 +25,39 @@
    *******************************************************************
 */
 
+/*
+   AssignmentThree -- a photo manager application for the Google Phone
+
+   Copyright (C) 2009 Chin-Kai Chang
+                      Ji Hyun Moon
+                      Avinash Patlolla
+                      Manu Viswanathan
+
+   This file is part of AssignmentThree.
+
+   AssignmentThree is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation; either version 2 of the
+   License, or (at your option) any later version.
+
+   AssignmentThree is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with AssignmentThree; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+   USA.
+*/
+
+/*
+  REVISION HISTORY
+
+  $HeadURL$
+  $Id$
+*/
+
 //----------------------- PACKAGE SPECIFICATION -------------------------
 
 package cs546.group7 ;
@@ -33,8 +66,10 @@ package cs546.group7 ;
 
 // Android UI support
 import android.widget.SimpleCursorAdapter ;
-import android.widget.CursorAdapter ;
+import android.widget.ImageView ;
 import android.widget.GridView ;
+
+import android.view.View ;
 
 // Android content-provider support
 import android.provider.MediaStore.Images.Thumbnails ;
@@ -43,6 +78,7 @@ import android.provider.MediaStore.Images.Thumbnails ;
 import android.database.Cursor ;
 
 // Android application and OS support
+import android.content.Context ;
 import android.app.Activity ;
 import android.os.Bundle ;
 
@@ -89,10 +125,10 @@ private GridView m_thumbnails_grid ;
 // Display the available thumbnails in the specified grid view
 private void display_thumbnails(GridView G)
 {
-   String[] from = new String[] {Thumbnails.IMAGE_ID} ;
+   String[] from = new String[] {Thumbnails._ID} ;
    int[]    to   = new int[]    {R.id.thumbnail} ;
-   G.setAdapter(new SimpleCursorAdapter(this, R.layout.thumbnail,
-                                        get_thumbnails(), from, to)) ;
+   G.setAdapter(new ThumbnailsAdapter(this, R.layout.thumbnail,
+                                      get_thumbnails(), from, to)) ;
 }
 
 // Retrieve the available thumbnails
@@ -102,7 +138,6 @@ private Cursor get_thumbnails()
    {
       String[] columns = new String[] {
          Thumbnails._ID,
-         Thumbnails.DATA,
          Thumbnails.IMAGE_ID,
       } ;
       return managedQuery(Thumbnails.EXTERNAL_CONTENT_URI, columns,
@@ -122,12 +157,25 @@ private Cursor get_thumbnails()
    MediaStore to the grid view used to display the thumbnails on the main
    screen of the photo manager application.
 */
-/*
-private class ImageCursorAdapter extends CursorAdapter {
-   public ImageCursorAdapter(Context context, Cursor cursor) {
+private class ThumbnailsAdapter extends SimpleCursorAdapter {
+   public ThumbnailsAdapter(Context X, int L, Cursor C, String[] f, int[] t) {
+      super(X, L, C, f, t) ;
+      setViewBinder(new ViewBinder()) ;
    }
-} // end of inner class ImageCursorAdapter
-//*/
+
+   private class ViewBinder implements SimpleCursorAdapter.ViewBinder {
+      public boolean setViewValue(View V, Cursor C, int column) {
+         int i = C.getColumnIndex(Thumbnails._ID) ;
+         if (column == i) {
+            ImageView img = (ImageView) V ;
+            img.setImageURI(ContentUris.withAppendedId(
+               Thumbnails.EXTERNAL_CONTENT_URI, C.getInt(i))) ;
+            return true ;
+         }
+         return false ;
+      }
+   } // end of inner class AssignmentThree.ThumbnailsAdapter.ViewBinder
+}    // end of inner class AssignmentThree.ThumbnailsAdapter
 
 //-----------------------------------------------------------------------
 
