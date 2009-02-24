@@ -68,6 +68,7 @@ package cs546.group7 ;
 import android.widget.SimpleCursorAdapter ;
 import android.widget.ImageView ;
 import android.widget.GridView ;
+import android.widget.AdapterView ;
 
 import android.view.View ;
 
@@ -86,7 +87,7 @@ import android.os.Bundle ;
 import android.content.ContentUris ;
 import android.util.Log ;
 
-//------------------------- CLASS DEFINITION ----------------------------
+//--------------------- APPLICATION'S MAIN SCREEN -----------------------
 
 /**
    This class implements the main screen of a photo manager application
@@ -115,9 +116,24 @@ private GridView m_thumbnails_grid ;
 
    // Setup the thumbnails grid
    m_thumbnails_grid = (GridView) findViewById(R.id.thumbnails_grid) ;
+   m_thumbnails_grid.setOnItemClickListener(
+      new AdapterView.OnItemClickListener() {
+         public void onItemClick(AdapterView A, View V, int pos, long id) {
+            display_picture(id) ;
+         }}) ;
 
    // Display the thumbnails of all available images
    display_thumbnails(m_thumbnails_grid) ;
+}
+
+//--------------------------- PHOTO DISPLAY -----------------------------
+
+// Start the activity that displays the selected picture and allows users
+// to play back any associated audio message and place the picture on a
+// map.
+private void display_picture(long id)
+{
+   Utils.notify(this, "Display picture w/ thumb ID " + id) ;
 }
 
 //------------------------- IMAGE THUMBNAILS ----------------------------
@@ -138,7 +154,6 @@ private Cursor get_thumbnails()
    {
       String[] columns = new String[] {
          Thumbnails._ID,
-         Thumbnails.IMAGE_ID,
       } ;
       return managedQuery(Thumbnails.EXTERNAL_CONTENT_URI, columns,
                           null, null, null) ;
@@ -179,4 +194,4 @@ private class ThumbnailsAdapter extends SimpleCursorAdapter {
 
 //-----------------------------------------------------------------------
 
-} // end of class AssignmentThree
+} // end of class cs546.group7.AssignmentThree
