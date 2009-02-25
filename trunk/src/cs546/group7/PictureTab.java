@@ -118,6 +118,10 @@ public class PictureTab extends Activity {
 /// following string is that key.
 public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
 
+/// Given the thumbnail ID, this class needs to find and display the
+/// corresponding full-sized image.
+private int m_full_picture_id ;
+
 //-------------------------- INITIALIZATION -----------------------------
 
 /**
@@ -133,7 +137,9 @@ public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
    setContentView(R.layout.picture_tab) ;
 
    Bundle extras = getIntent().getExtras() ;
-   display_full_sized_picture(extras.getLong(EXTRAS_THUMBNAIL_ID)) ;
+   m_full_picture_id = full_picture_id(extras.getLong(EXTRAS_THUMBNAIL_ID)) ;
+
+   display_picture(m_full_picture_id) ;
 }
 
 /**
@@ -179,17 +185,24 @@ private void play_audio_tag()
 // Record an audio tag for the displayed image
 private void record_audio_tag()
 {
-   Utils.notify(this, "Recording audio tag...") ;
+   Recorder R = new AudioRecorder(this) ;
+   R.capture() ;
+   long new_audio_id = R.store() ;
+
+   // TODO: m_db.delete_audio(m_full_picture_id) ;
+   // TODO: m_db.update_audio(m_full_picture_id, new_audio_id) ;
 }
 
 //-------------------------- PICTURE DISPLAY ----------------------------
 
-private void display_full_sized_picture(long thumbnail_id)
+private void display_picture(long picture_id)
 {
    ImageView img = (ImageView) findViewById(R.id.full_picture) ;
-   img.setImageURI(ContentUris.withAppendedId(
-      Media.EXTERNAL_CONTENT_URI, full_picture_id(thumbnail_id))) ;
+   img.setImageURI(ContentUris.withAppendedId(Media.EXTERNAL_CONTENT_URI,
+                                              picture_id)) ;
 }
+
+//------------------------------ HELPERS --------------------------------
 
 // Return ID of full-sized image corresponding to specified thumbnail
 private int full_picture_id(long thumbnail_id)

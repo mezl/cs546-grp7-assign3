@@ -89,6 +89,7 @@ import android.os.Bundle ;
    where the picture was taken. A pin is drawn on the exact spot where
    the picture was taken.
 */
+//public class MapTab extends com.google.android.maps.MapActivity {
 public class MapTab extends Activity {
 
 //-------------------------- INITIALIZATION -----------------------------

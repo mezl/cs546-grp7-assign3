@@ -179,7 +179,16 @@ private void display_picture(long id)
 // database along with the current GPS coordinates.
 private void capture_image_plus_gps()
 {
-   Utils.notify(this, "Acquiring picture and GPS coordinates...") ;
+   Recorder R = new ImageRecorder(this) ;
+   R.capture() ;
+   long new_picture_id = R.store() ;
+
+   R = new GPSRecorder(this) ;
+   R.capture() ;
+   long new_gps_id = R.store() ;
+
+   // TODO: m_db.add(new_picture_id, new_gps_id) ;
+   // TODO: display_picture(get_thumbnail(new_picture_id)) ;
 }
 
 //------------------------- IMAGE THUMBNAILS ----------------------------
