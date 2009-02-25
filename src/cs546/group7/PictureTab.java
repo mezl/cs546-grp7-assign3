@@ -70,12 +70,25 @@ package cs546.group7 ;
 //------------------------------ IMPORTS --------------------------------
 
 // Android UI support
+import android.widget.ImageView ;
+
 import android.view.Menu ;
 import android.view.MenuItem ;
+
+// Android content-provider support
+import android.provider.MediaStore.Images.Media ;
+import android.provider.MediaStore.Images.Thumbnails ;
+
+// Android database support
+import android.database.Cursor ;
 
 // Android application and OS support
 import android.app.Activity ;
 import android.os.Bundle ;
+
+// Android utilities
+import android.content.ContentUris ;
+import android.util.Log ;
 
 //-------------------- DISPLAY SCREEN PICTURE TAB -----------------------
 
@@ -95,16 +108,32 @@ import android.os.Bundle ;
 */
 public class PictureTab extends Activity {
 
+/// The photo manager's main screen passes in the ID of the selected
+/// thumbnail to display screen using the intent extras mechanism
+/// provided by Android. The display screen, in turn, passes this ID in
+/// to this tab via the same mechanism.
+///
+/// To be able to properly store and retrieve this value, the display
+/// screen and this tab need to agree on a suitable key/tag to use. The
+/// following string is that key.
+public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
+
 //-------------------------- INITIALIZATION -----------------------------
 
 /**
    This method is called when the activity is first created. It is akin
-   to the "main" function in normal desktop applications.
+   to the "main" function in normal desktop applications. On the picture
+   tab of the display screen, we need to retrieve the ID of the thumbnail
+   selected by the user on the photo manager app's main screen and
+   display that in the tab's full-picture image view.
 */
 @Override public void onCreate(Bundle saved_state)
 {
    super.onCreate(saved_state) ;
    setContentView(R.layout.picture_tab) ;
+
+   Bundle extras = getIntent().getExtras() ;
+   display_full_sized_picture(extras.getLong(EXTRAS_THUMBNAIL_ID)) ;
 }
 
 /**
@@ -151,6 +180,39 @@ private void play_audio_tag()
 private void record_audio_tag()
 {
    Utils.notify(this, "Recording audio tag...") ;
+}
+
+//-------------------------- PICTURE DISPLAY ----------------------------
+
+private void display_full_sized_picture(long thumbnail_id)
+{
+   ImageView img = (ImageView) findViewById(R.id.full_picture) ;
+   img.setImageURI(ContentUris.withAppendedId(
+      Media.EXTERNAL_CONTENT_URI, full_picture_id(thumbnail_id))) ;
+}
+
+// Return ID of full-sized image corresponding to specified thumbnail
+private int full_picture_id(long thumbnail_id)
+{
+   try
+   {
+      String[] columns = new String[] {
+         Thumbnails._ID,
+         Thumbnails.IMAGE_ID,
+      } ;
+      String where_clause = Thumbnails._ID + "=" + thumbnail_id ;
+      Cursor C = managedQuery(Thumbnails.EXTERNAL_CONTENT_URI, columns,
+                              where_clause, null, null) ;
+      if (C.getCount() > 0) {
+         C.moveToFirst() ;
+         return C.getInt(C.getColumnIndex(Thumbnails.IMAGE_ID)) ;
+      }
+   }
+   catch (android.database.sqlite.SQLiteException e)
+   {
+      Log.e(null, "MVN: unable to retrieve thumbnails", e) ;
+   }
+   return -1 ;
 }
 
 //-----------------------------------------------------------------------

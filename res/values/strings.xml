@@ -65,4 +65,6 @@
    <string name="record_audio_tag_menu_item">Record Audio Tag</string>
 
    <string name="map_tab_label"><big>Map</big></string>
+
+   <string name="alert_okay_label">OK</string>
 </resources>

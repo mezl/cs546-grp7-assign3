@@ -57,6 +57,7 @@ package cs546.group7 ;
 
 // Android UI support
 import android.widget.Toast ;
+import android.app.AlertDialog ;
 
 // Android application and OS support
 import android.content.Context ;
@@ -70,9 +71,21 @@ public class Utils {
 
 //------------------------- UI NOTIFICATIONS ----------------------------
 
+/// A short notification message that doesn't steal focus or require any
+/// specific interaction on the user's part to dismiss. It simply appears
+/// briefly and fades away.
 public final static void notify(Context C, String msg)
 {
    Toast.makeText(C, msg, Toast.LENGTH_SHORT).show() ;
+}
+
+/// Show an error box
+public final static void alert(Context C, String msg)
+{
+   AlertDialog.Builder alert = new AlertDialog.Builder(C) ;
+   alert.setMessage(msg) ;
+   alert.setPositiveButton(R.string.alert_okay_label, null) ;
+   alert.show() ;
 }
 
 //-----------------------------------------------------------------------
