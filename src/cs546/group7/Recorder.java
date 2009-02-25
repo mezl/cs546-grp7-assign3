@@ -10,8 +10,13 @@
    *                                                                 *
    *******************************************************************
    *                                                                 *
-   * This file contains an assortment of utility functions used by   *
-   * different parts of the photo manager application.               *
+   * This file defines an abstract base class for capturing data     *
+   * from different sources and storing it to a database. It is      *
+   * meant to be used as a common interface for capturing images     *
+   * from the camera, audio from the phone's mic and GPS coordinates *
+   * from the GPS device. The captured data should then be stored to *
+   * an appropriate database (e.g., MediaStore.Images.Media or       *
+   * MediaStore.Audio.Media).                                        *
    *                                                                 *
    *******************************************************************
 */
@@ -55,39 +60,47 @@ package cs546.group7 ;
 
 //------------------------------ IMPORTS --------------------------------
 
-// Android UI support
-import android.widget.Toast ;
-import android.app.AlertDialog ;
-
 // Android application and OS support
 import android.content.Context ;
 
 //------------------------- CLASS DEFINITION ----------------------------
 
 /**
-   This class provides several handy utility functions.
+   This abstract base class provides a common interface for different
+   types of recorders that capture data from some device on the phone and
+   store it to an appropriate database.
 */
-class Utils {
+abstract class Recorder {
 
-//------------------------- UI NOTIFICATIONS ----------------------------
+/// All recorders store an Android context so they can "reach" and
+/// interact with the devices they are recording from (the sources) as
+/// well as the target databases they need to store the capture data in
+/// (the sinks).
+private Context m_context ;
 
-/// A short notification message that doesn't steal focus or require any
-/// specific interaction on the user's part to dismiss. It simply appears
-/// briefly and fades away.
-public final static void notify(Context C, String msg)
+/// An accessor to allow derived classes to retrieve the current context
+protected final Context getContext()
 {
-   Toast.makeText(C, msg, Toast.LENGTH_SHORT).show() ;
+   return m_context ;
 }
 
-/// Show an error box
-public final static void alert(Context C, String msg)
+/// The constructor expects to be passed a viable Android context.
+/// Derived classes should call this constructor prior to performing
+/// their own initialization.
+protected Recorder(Context C)
 {
-   AlertDialog.Builder alert = new AlertDialog.Builder(C) ;
-   alert.setMessage(msg) ;
-   alert.setPositiveButton(R.string.alert_okay_label, null) ;
-   alert.show() ;
+   m_context = C ;
 }
+
+/// This method captures data from the source device. All derived classes
+/// must implement this method.
+public abstract void capture() ;
+
+/// This method stores the data captured by the capture method to the
+/// target database and returns the ID of the newly added data item. All
+/// derived classes must implement this method.
+public abstract long store() ;
 
 //-----------------------------------------------------------------------
 
-} // end of class cs546.group7.Utils
+} // end of class cs546.group7.Recorder

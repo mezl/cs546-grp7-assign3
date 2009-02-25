@@ -10,8 +10,10 @@
    *                                                                 *
    *******************************************************************
    *                                                                 *
-   * This file contains an assortment of utility functions used by   *
-   * different parts of the photo manager application.               *
+   * This file defines a class for capturing pictures from the       *
+   * phone's camera. The newly captured image is stored in the       *
+   * MediaStore.Images.Media database and its ID returned to client  *
+   * object.                                                         *
    *                                                                 *
    *******************************************************************
 */
@@ -55,39 +57,41 @@ package cs546.group7 ;
 
 //------------------------------ IMPORTS --------------------------------
 
-// Android UI support
-import android.widget.Toast ;
-import android.app.AlertDialog ;
-
 // Android application and OS support
 import android.content.Context ;
 
 //------------------------- CLASS DEFINITION ----------------------------
 
 /**
-   This class provides several handy utility functions.
+   This class performs the necessary interfacing rituals with Android in
+   order to capture a new picture using the gPhone's on-board camera and
+   store it to the MediaStore.Images.Media database.
 */
-class Utils {
+class ImageRecorder extends Recorder {
 
-//------------------------- UI NOTIFICATIONS ----------------------------
-
-/// A short notification message that doesn't steal focus or require any
-/// specific interaction on the user's part to dismiss. It simply appears
-/// briefly and fades away.
-public final static void notify(Context C, String msg)
+/// The constructor expects to be passed a viable Android context
+public ImageRecorder(Context C)
 {
-   Toast.makeText(C, msg, Toast.LENGTH_SHORT).show() ;
+   super(C) ;
 }
 
-/// Show an error box
-public final static void alert(Context C, String msg)
+/// This method captures an image from the phone's camera
+@Override public void capture()
 {
-   AlertDialog.Builder alert = new AlertDialog.Builder(C) ;
-   alert.setMessage(msg) ;
-   alert.setPositiveButton(R.string.alert_okay_label, null) ;
-   alert.show() ;
+   // KAI ==> REPLACE THIS AND THE NEXT LINE WITH CAMERA CAPTURE CODE
+   Utils.notify(getContext(), "Capturing image from camera...") ;
+}
+
+/// This method stores the image captured from the camera to the
+/// MediaStore.Images.Media database and returns the ID of the newly
+/// added picture.
+@Override public long store()
+{
+   // KAI ==> REPLACE THIS AND THE NEXT TWO LINES WITH IMAGE STORING CODE
+   Utils.notify(getContext(), "Storing new picture in database...") ;
+   return -1 ; // FIXME!
 }
 
 //-----------------------------------------------------------------------
 
-} // end of class cs546.group7.Utils
+} // end of class cs546.group7.ImageRecorder

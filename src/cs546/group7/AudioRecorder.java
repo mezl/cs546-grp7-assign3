@@ -10,8 +10,10 @@
    *                                                                 *
    *******************************************************************
    *                                                                 *
-   * This file contains an assortment of utility functions used by   *
-   * different parts of the photo manager application.               *
+   * This file defines a class for capturing audio from the gPhone's *
+   * mic. The newly captured audio data is stored in the             *
+   * MediaStore.Audio.Media database and its ID returned to client   *
+   * object.                                                         *
    *                                                                 *
    *******************************************************************
 */
@@ -55,39 +57,41 @@ package cs546.group7 ;
 
 //------------------------------ IMPORTS --------------------------------
 
-// Android UI support
-import android.widget.Toast ;
-import android.app.AlertDialog ;
-
 // Android application and OS support
 import android.content.Context ;
 
 //------------------------- CLASS DEFINITION ----------------------------
 
 /**
-   This class provides several handy utility functions.
+   This class performs the necessary interfacing rituals with Android in
+   order to capture the current location using the gPhone's on-board GPS
+   device. This data is then stored in the ??? database.
 */
-class Utils {
+class AudioRecorder extends Recorder {
 
-//------------------------- UI NOTIFICATIONS ----------------------------
-
-/// A short notification message that doesn't steal focus or require any
-/// specific interaction on the user's part to dismiss. It simply appears
-/// briefly and fades away.
-public final static void notify(Context C, String msg)
+/// The constructor expects to be passed a viable Android context
+public AudioRecorder(Context C)
 {
-   Toast.makeText(C, msg, Toast.LENGTH_SHORT).show() ;
+   super(C) ;
 }
 
-/// Show an error box
-public final static void alert(Context C, String msg)
+/// This method captures some audio from the phone's mic
+@Override public void capture()
 {
-   AlertDialog.Builder alert = new AlertDialog.Builder(C) ;
-   alert.setMessage(msg) ;
-   alert.setPositiveButton(R.string.alert_okay_label, null) ;
-   alert.show() ;
+   // JI HYUN ==> REPLACE THIS AND THE NEXT LINE WITH AUDIO CAPTURE CODE
+   Utils.notify(getContext(), "Capturing audio from mic...") ;
+}
+
+/// This method stores the audio captured from the mic to the
+/// MediaStore.Audio.Media database and returns the ID of the newly added
+/// audio file.
+@Override public long store()
+{
+   // JI HYUN ==> REPLACE THIS AND NEXT TWO LINES WITH AUDIO STORING CODE
+   Utils.notify(getContext(), "Storing audio in database...") ;
+   return -1 ; // FIXME!
 }
 
 //-----------------------------------------------------------------------
 
-} // end of class cs546.group7.Utils
+} // end of class cs546.group7.AudioRecorder
