@@ -11,10 +11,23 @@
 <!--                                                                  -->
 <!--##################################################################-->
 <!--                                                                  -->
-<!-- This file specifies various string resources used by the photo   -->
-<!-- manager application for the Android/gPhone platform that tags    -->
-<!-- new pictures taken with the camera with the current GPS coordi-  -->
-<!-- nates and optional audio.                                        -->
+<!-- This file specifies the user interface for the map tab of the    -->
+<!-- display screen of a photo manager application that tags new      -->
+<!-- pictures taken on the gPhone with the current GPS coordinates    -->
+<!-- and optional audio.                                              -->
+<!--                                                                  -->
+<!-- The application consists of two screens. The first one displays  -->
+<!-- thumbnails of all the currently available images on the phone    -->
+<!-- and allows users to select one of these images or to add a new   -->
+<!-- one using the camera.                                            -->
+<!--                                                                  -->
+<!-- The application's second screen has two tabs. The first one      -->
+<!-- shows the full-sized version of the thumbnailed image selected   -->
+<!-- on the previous screen. The second tab shows a map of the        -->
+<!-- vicinity of where the picture was taken.                         -->
+<!--                                                                  -->
+<!-- This file contains the UI specs for the second tab of the app's  -->
+<!-- second screen, i.e., the map tab.                                -->
 <!--                                                                  -->
 <!--##################################################################-->
 
@@ -55,14 +68,10 @@
 -->
 <!--##################################################################-->
 
-<resources>
-   <string name="app_name">Grp 7 Assign. III</string>
-
-   <string name="add_picture_menu_item">Add a picture</string>
-
-   <string name="picture_tab_label"><big>Picture</big></string>
-   <string name="play_audio_tag_menu_item">Play Audio Tag</string>
-   <string name="record_audio_tag_menu_item">Record Audio Tag</string>
-
-   <string name="map_tab_label"><big>Map</big></string>
-</resources>
+<!-- The map tab shows just one thing: a map of the vicinity of where -->
+<!-- the picture selected on the app's main screen was acquired.      -->
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+           android:id="@+id/map"
+           android:layout_width="fill_parent"
+           android:layout_height="fill_parent"
+           android:scaleType="centerCrop"/>
