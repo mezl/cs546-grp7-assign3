@@ -74,6 +74,18 @@
    </intent-filter>
 </activity>
 
+<!-- The picture display screen -->
+<activity android:name=".DisplayScreen">
+</activity>
+
+<!-- The picture tab of the display screen -->
+<activity android:name=".PictureTab">
+</activity>
+
+<!-- The map tab of the display screen -->
+<activity android:name=".MapTab">
+</activity>
+
 </application>
 
 <!--========================== PERMISSIONS ===========================-->

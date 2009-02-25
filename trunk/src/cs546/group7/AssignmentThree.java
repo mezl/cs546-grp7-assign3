@@ -74,6 +74,8 @@ import android.view.Menu ;
 import android.view.MenuItem ;
 import android.view.View ;
 
+import android.content.Intent ;
+
 // Android content-provider support
 import android.provider.MediaStore.Images.Thumbnails ;
 
@@ -139,17 +141,7 @@ private GridView m_thumbnails_grid ;
    return true ;
 }
 
-//--------------------------- PHOTO DISPLAY -----------------------------
-
-// Start the activity that displays the selected picture and allows users
-// to play back any associated audio message and place the picture on a
-// map.
-private void display_picture(long id)
-{
-   Utils.notify(this, "Display picture w/ thumb ID " + id) ;
-}
-
-//--------------------------- PHOTO CAPTURE -----------------------------
+//--------------------------- MENU COMMANDS -----------------------------
 
 /**
    This method is called when a menu item from the activity's menu is
@@ -168,6 +160,20 @@ private void display_picture(long id)
    }
    return super.onOptionsItemSelected(item) ;
 }
+
+//--------------------------- PHOTO DISPLAY -----------------------------
+
+// Start the activity that displays the selected picture and allows users
+// to play back any associated audio message and place the picture on a
+// map.
+private void display_picture(long id)
+{
+   Intent I = new Intent(this, DisplayScreen.class) ;
+   I.putExtra(DisplayScreen.THUMBNAIL_ID_KEY, id) ;
+   startActivity(I) ;
+}
+
+//--------------------------- PHOTO CAPTURE -----------------------------
 
 // Use the on-board camera to get a new image and store it in the
 // database along with the current GPS coordinates.
@@ -205,7 +211,7 @@ private Cursor get_thumbnails()
    }
 }
 
-//----------------------- IMAGE CURSOR ADAPTER --------------------------
+//------------------------ THUMBNAILS ADAPTER ---------------------------
 
 /**
    This inner class connects the thumbnails obtained from the Android
