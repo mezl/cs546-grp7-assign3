@@ -70,6 +70,8 @@ import android.widget.ImageView ;
 import android.widget.GridView ;
 import android.widget.AdapterView ;
 
+import android.view.Menu ;
+import android.view.MenuItem ;
 import android.view.View ;
 
 // Android content-provider support
@@ -126,6 +128,17 @@ private GridView m_thumbnails_grid ;
    display_thumbnails(m_thumbnails_grid) ;
 }
 
+/**
+   This method is called the first time the application's menu is
+   displayed. The code to setup the menu is pretty much boilerplate,
+   i.e., inflate the appropriate menu from an XML resource file.
+*/
+@Override public boolean onCreateOptionsMenu(Menu menu)
+{
+   getMenuInflater().inflate(R.menu.main_menu, menu) ;
+   return true ;
+}
+
 //--------------------------- PHOTO DISPLAY -----------------------------
 
 // Start the activity that displays the selected picture and allows users
@@ -134,6 +147,33 @@ private GridView m_thumbnails_grid ;
 private void display_picture(long id)
 {
    Utils.notify(this, "Display picture w/ thumb ID " + id) ;
+}
+
+//--------------------------- PHOTO CAPTURE -----------------------------
+
+/**
+   This method is called when a menu item from the activity's menu is
+   selected. In the case of the photo manager application, this
+   corresponds to the main menu associated with the main screen. The
+   handler is pretty much boilerplate; it simply despatches handling for
+   each menu item to an appropriate method.
+*/
+@Override public boolean onOptionsItemSelected(MenuItem item)
+{
+   switch (item.getItemId())
+   {
+      case R.id.add_picture:
+         capture_image_plus_gps() ;
+         return true ;
+   }
+   return super.onOptionsItemSelected(item) ;
+}
+
+// Use the on-board camera to get a new image and store it in the
+// database along with the current GPS coordinates.
+private void capture_image_plus_gps()
+{
+   Utils.notify(this, "Acquiring picture and GPS coordinates...") ;
 }
 
 //------------------------- IMAGE THUMBNAILS ----------------------------
@@ -147,7 +187,7 @@ private void display_thumbnails(GridView G)
                                       get_thumbnails(), from, to)) ;
 }
 
-// Retrieve the available thumbnails
+// Retrieve the available thumbnail IDs
 private Cursor get_thumbnails()
 {
    try
@@ -173,24 +213,45 @@ private Cursor get_thumbnails()
    screen of the photo manager application.
 */
 private class ThumbnailsAdapter extends SimpleCursorAdapter {
-   public ThumbnailsAdapter(Context X, int L, Cursor C, String[] f, int[] t) {
-      super(X, L, C, f, t) ;
-      setViewBinder(new ViewBinder()) ;
-   }
 
-   private class ViewBinder implements SimpleCursorAdapter.ViewBinder {
-      public boolean setViewValue(View V, Cursor C, int column) {
-         int i = C.getColumnIndex(Thumbnails._ID) ;
-         if (column == i) {
-            ImageView img = (ImageView) V ;
-            img.setImageURI(ContentUris.withAppendedId(
-               Thumbnails.EXTERNAL_CONTENT_URI, C.getInt(i))) ;
-            return true ;
-         }
-         return false ;
-      }
-   } // end of inner class AssignmentThree.ThumbnailsAdapter.ViewBinder
-}    // end of inner class AssignmentThree.ThumbnailsAdapter
+/// Our custom adapter's constructor takes the same arguments as a
+/// standard SimpleCursorAdapter. The only difference between this
+/// adapter and the SimpleCursorAdapter is that it uses a custom view
+/// binder to bind cursor columns to corresponding UI elements.
+public ThumbnailsAdapter(Context context, int layout, Cursor cursor,
+                         String[] from, int[] to)
+{
+   super(context, layout, cursor, from, to) ;
+   setViewBinder(new ViewBinder()) ;
+}
+
+/// This inner class is the binder used to bind thumbnail IDs to an image
+/// view.
+private class ViewBinder implements SimpleCursorAdapter.ViewBinder {
+
+/// This method is called by SimpleCursorAdapter for "transferring" the
+/// contents of each underlying data item (as pointed to by its cursor)
+/// to an appropriate UI element.
+///
+/// In our case, the cursor holds the IDs of all the available thumbnails
+/// on the phone. We want to draw these thumbnails on image views that
+/// are arranged in a grid. To do this, we create the appropriate URI for
+/// the thumbnail using its ID and instruct the target image view to
+/// obtain its contents through that URI.
+public boolean setViewValue(View V, Cursor C, int column)
+{
+   int i = C.getColumnIndex(Thumbnails._ID) ;
+   if (column == i) {
+      ImageView img = (ImageView) V ;
+      img.setImageURI(ContentUris.withAppendedId(
+         Thumbnails.EXTERNAL_CONTENT_URI, C.getInt(i))) ;
+      return true ;
+   }
+   return false ;
+}
+
+} // end of inner class AssignmentThree.ThumbnailsAdapter.ViewBinder
+} // end of inner class AssignmentThree.ThumbnailsAdapter
 
 //-----------------------------------------------------------------------
 

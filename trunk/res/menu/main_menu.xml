@@ -11,10 +11,9 @@
 <!--                                                                  -->
 <!--##################################################################-->
 <!--                                                                  -->
-<!-- This file specifies various string resources used by the photo   -->
-<!-- manager application for the Android/gPhone platform that tags    -->
-<!-- new pictures taken with the camera with the current GPS coordi-  -->
-<!-- nates and optional audio.                                        -->
+<!-- This file specifies the menu for the main screen of a photo      -->
+<!-- manager application that tags new pictures taken on the Google   -->
+<!-- Phone with the current GPS coordinates and optional audio.       -->
 <!--                                                                  -->
 <!--##################################################################-->
 
@@ -55,8 +54,8 @@
 -->
 <!--##################################################################-->
 
-<resources>
-   <string name="app_name">Grp 7 Assign. III</string>
-
-   <string name="add_picture_menu_item">Add a picture</string>
-</resources>
+<!-- The photo manager's main menu -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+   <item android:id="@+id/add_picture"
+         android:title="@string/add_picture_menu_item"/>
+</menu>
