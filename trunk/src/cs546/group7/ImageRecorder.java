@@ -57,6 +57,7 @@ package cs546.group7;
 //------------------------------ IMPORTS --------------------------------
 
 // Android application and OS support
+import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -66,9 +67,6 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.provider.MediaStore.Images.Media;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.content.Intent;
 
 //------------------------- CLASS DEFINITION ----------------------------
 
@@ -79,7 +77,7 @@ import android.content.Intent;
  */
 class ImageRecorder extends Recorder {
 
-	private Camera camera;	
+	private Camera camera;
 	private SimpleDateFormat timeStampFormat = new SimpleDateFormat("HHmmssSS");
 
 	// / The constructor expects to be passed a viable Android context
@@ -97,7 +95,7 @@ class ImageRecorder extends Recorder {
 	Camera.PictureCallback mPictureCallbackRaw = new Camera.PictureCallback() {
 		public void onPictureTaken(byte[] data, Camera c) {
 			Log.e(getClass().getSimpleName(), "PICTURE CALLBACK RAW: " + data);
-			//camera.startPreview();
+			// camera.startPreview();
 		}
 	};
 
@@ -105,7 +103,7 @@ class ImageRecorder extends Recorder {
 		public void onPictureTaken(byte[] data, Camera c) {
 			Log.e(getClass().getSimpleName(),
 					"PICTURE CALLBACK JPEG: data.length = " + data);
-			//camera.startPreview();
+			// camera.startPreview();
 		}
 	};
 
@@ -122,28 +120,36 @@ class ImageRecorder extends Recorder {
 	public long store() {
 		// KAI ==> REPLACE THIS AND THE NEXT TWO LINES WITH IMAGE STORING CODE
 		ImageCaptureCallback iccb = null;
+		int picture_id = -1;
 		Utils.notify(getContext(), "Storing new picture in database...");
-		//This is done by onPictureTaken.....
+		// This is done by onPictureTaken.....
 		Utils.notify(getContext(), "Capturing image from camera...");
 		String filename = "my" + timeStampFormat.format(new Date());
-				
-		ContentValues values = new ContentValues();
-		values.put(Media.TITLE, filename);
-		values.put(Media.DESCRIPTION, "Image capture by camera");
-		Uri uri = getContentResolver().insert(Media.EXTERNAL_CONTENT_URI,
-				values);
-		int  picture_id =  Integer.parseInt(uri.getLastPathSegment());
-		
 		try {
+			ContentValues values = new ContentValues();
+			values.put(Media.TITLE, filename);
+			values.put(Media.DESCRIPTION, "Image capture by camera");
+			Log.w("capture", "try insert ext uri");			
+			Uri uri = getContentResolver().insert(Media.EXTERNAL_CONTENT_URI,
+					values);
+			picture_id = Integer.parseInt(uri.getLastPathSegment());
+			Log.w("capture", " pic id =" + picture_id);
+
 			iccb = new ImageCaptureCallback(getContentResolver()
 					.openOutputStream(uri));
 			camera.takePicture(mShutterCallback, mPictureCallbackRaw, iccb);
+		} catch (FileNotFoundException fnfe) {
+			Log.e("capture", filename + " File Not found");
+			Log.e(getClass().getSimpleName(), fnfe.getMessage(), fnfe);
+		} catch (NullPointerException npe) {
+			Log.e(getClass().getSimpleName(), npe.getMessage(), npe);
 		} catch (Exception e) {
-			Log.e("capture",e.getMessage());
+			Log.e(getClass().getSimpleName(), e.getMessage(), e);
+			
 		}
-		
-		return picture_id;		
-		
+
+		return picture_id;
+
 	}
 
 	// -----------------------------------------------------------------------
