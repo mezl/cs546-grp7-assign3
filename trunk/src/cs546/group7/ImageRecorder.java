@@ -79,11 +79,8 @@ import android.content.Intent;
  */
 class ImageRecorder extends Recorder {
 
-	private Camera camera;
-	
+	private Camera camera;	
 	private SimpleDateFormat timeStampFormat = new SimpleDateFormat("HHmmssSS");
-
-	private Uri target = Media.EXTERNAL_CONTENT_URI;
 
 	// / The constructor expects to be passed a viable Android context
 	public ImageRecorder(Context C) {
@@ -93,23 +90,8 @@ class ImageRecorder extends Recorder {
 	// / This method captures an image from the phone's camera
 	@Override
 	public void capture() {
-		ImageCaptureCallback iccb = null;
 		// KAI ==> REPLACE THIS AND THE NEXT LINE WITH CAMERA CAPTURE CODE
-		Utils.notify(getContext(), "Capturing image from camera...");
-		String filename = "my" + timeStampFormat.format(new Date());
-				
-		ContentValues values = new ContentValues();
-		values.put(Media.TITLE, filename);
-		values.put(Media.DESCRIPTION, "Image capture by camera");
-		Uri uri = getContentResolver().insert(Media.EXTERNAL_CONTENT_URI,
-				values);
-		try {
-			iccb = new ImageCaptureCallback(getContentResolver()
-					.openOutputStream(uri));
-			camera.takePicture(mShutterCallback, mPictureCallbackRaw, iccb);
-		} catch (Exception e) {
-			Log.e("capture",e.getMessage());
-		}
+
 	}
 
 	Camera.PictureCallback mPictureCallbackRaw = new Camera.PictureCallback() {
@@ -139,9 +121,29 @@ class ImageRecorder extends Recorder {
 	@Override
 	public long store() {
 		// KAI ==> REPLACE THIS AND THE NEXT TWO LINES WITH IMAGE STORING CODE
+		ImageCaptureCallback iccb = null;
 		Utils.notify(getContext(), "Storing new picture in database...");
 		//This is done by onPictureTaken.....
-		return -1; // FIXME!
+		Utils.notify(getContext(), "Capturing image from camera...");
+		String filename = "my" + timeStampFormat.format(new Date());
+				
+		ContentValues values = new ContentValues();
+		values.put(Media.TITLE, filename);
+		values.put(Media.DESCRIPTION, "Image capture by camera");
+		Uri uri = getContentResolver().insert(Media.EXTERNAL_CONTENT_URI,
+				values);
+		int  picture_id =  Integer.parseInt(uri.getLastPathSegment());
+		
+		try {
+			iccb = new ImageCaptureCallback(getContentResolver()
+					.openOutputStream(uri));
+			camera.takePicture(mShutterCallback, mPictureCallbackRaw, iccb);
+		} catch (Exception e) {
+			Log.e("capture",e.getMessage());
+		}
+		
+		return picture_id;		
+		
 	}
 
 	// -----------------------------------------------------------------------

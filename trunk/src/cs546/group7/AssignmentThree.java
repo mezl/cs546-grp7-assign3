@@ -180,7 +180,7 @@ private void display_picture(long id)
 private void capture_image_plus_gps()
 {
    Recorder R = new ImageRecorder(this) ;
-   R.capture() ;
+   //R.capture() ;
    long new_picture_id = R.store() ;
 
    R = new GPSRecorder(this) ;
