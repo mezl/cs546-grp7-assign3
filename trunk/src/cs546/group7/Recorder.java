@@ -61,6 +61,7 @@ package cs546.group7 ;
 //------------------------------ IMPORTS --------------------------------
 
 // Android application and OS support
+import android.app.Activity;
 import android.content.Context ;
 
 //------------------------- CLASS DEFINITION ----------------------------
@@ -70,7 +71,7 @@ import android.content.Context ;
    types of recorders that capture data from some device on the phone and
    store it to an appropriate database.
 */
-abstract class Recorder {
+abstract class Recorder extends Activity{
 
 /// All recorders store an Android context so they can "reach" and
 /// interact with the devices they are recording from (the sources) as
