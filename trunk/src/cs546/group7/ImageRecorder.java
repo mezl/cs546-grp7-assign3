@@ -83,6 +83,7 @@ class ImageRecorder extends Recorder {
 	// / The constructor expects to be passed a viable Android context
 	public ImageRecorder(Context C) {
 		super(C);
+		
 	}
 
 	// / This method captures an image from the phone's camera
@@ -130,13 +131,15 @@ class ImageRecorder extends Recorder {
 			values.put(Media.TITLE, filename);
 			values.put(Media.DESCRIPTION, "Image capture by camera");
 			Log.w("capture", "try insert ext uri");			
-			Uri uri = getContentResolver().insert(Media.EXTERNAL_CONTENT_URI,
+			Uri uri = getContext().getContentResolver().insert(Media.EXTERNAL_CONTENT_URI,
 					values);
 			picture_id = Integer.parseInt(uri.getLastPathSegment());
 			Log.w("capture", " pic id =" + picture_id);
 
-			iccb = new ImageCaptureCallback(getContentResolver()
+			iccb = new ImageCaptureCallback(getContext().getContentResolver()
 					.openOutputStream(uri));
+			Log.w("capture", "After ICCB");
+			camera = Camera.open();
 			camera.takePicture(mShutterCallback, mPictureCallbackRaw, iccb);
 		} catch (FileNotFoundException fnfe) {
 			Log.e("capture", filename + " File Not found");

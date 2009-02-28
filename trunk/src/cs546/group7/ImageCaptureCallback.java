@@ -15,6 +15,7 @@ public class ImageCaptureCallback implements PictureCallback {
 	private OutputStream filoutputStream;
 
 	public ImageCaptureCallback(OutputStream filoutputStream) {
+		Log.v(getClass().getSimpleName(), "Create ICCB=");
 		this.filoutputStream = filoutputStream;
 	}
 

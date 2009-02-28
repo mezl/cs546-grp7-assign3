@@ -71,7 +71,7 @@ import android.content.Context ;
    types of recorders that capture data from some device on the phone and
    store it to an appropriate database.
 */
-abstract class Recorder extends Activity{
+abstract class Recorder{
 
 /// All recorders store an Android context so they can "reach" and
 /// interact with the devices they are recording from (the sources) as
