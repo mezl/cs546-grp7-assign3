@@ -59,8 +59,15 @@ package cs546.group7 ;
 import android.widget.Toast ;
 import android.app.AlertDialog ;
 
+// Android services
+import android.media.MediaScannerConnection ;
+
+// Android networking support
+import android.net.Uri ;
+
 // Android application and OS support
 import android.content.Context ;
+import android.content.Intent ;
 
 //------------------------- CLASS DEFINITION ----------------------------
 
@@ -86,6 +93,35 @@ public final static void alert(Context C, String msg)
    alert.setMessage(msg) ;
    alert.setPositiveButton(R.string.alert_okay_label, null) ;
    alert.show() ;
+}
+
+//----------------------- ANDROID MEDIA HELPERS -------------------------
+
+/// This function adds a thumbnail for a newly created image.
+///
+/// DEVNOTE: Unfortunately, this does not work! For some reason, we get
+/// an IllegalStateException due to the connection to the media scanner
+/// service never being made.
+public final static void add_thumbnail(Context C, Uri uri)
+{
+   MediaScannerConnection media_scanner = new MediaScannerConnection(C, null) ;
+   media_scanner.connect() ;
+   media_scanner.scanFile(uri.getEncodedPath(), null) ;
+   media_scanner.disconnect() ;
+}
+
+/// This function attempts to work around the previous one by rescanning
+/// the entire SD card, which ought to result in creating thumbnails for
+/// any new images in the MediaStore.Images.Media database that might
+/// have been added recently.
+///
+/// DEVNOTE: This does not work either. Android sucks ass.
+public final static void rescan_sdcard(Context C, Uri uri)
+{
+   Intent I = new Intent(Intent.ACTION_MEDIA_MOUNTED) ;
+   I.setData(Uri.parse("file:///sdcard")) ;
+   I.putExtra("read-only", false) ;
+   C.sendBroadcast(I) ;
 }
 
 //-----------------------------------------------------------------------

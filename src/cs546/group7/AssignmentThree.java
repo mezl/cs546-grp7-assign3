@@ -155,7 +155,7 @@ private GridView m_thumbnails_grid ;
    switch (item.getItemId())
    {
       case R.id.add_picture:
-         capture_image_plus_gps() ;
+         capture_image() ;
          return true ;
    }
    return super.onOptionsItemSelected(item) ;
@@ -176,19 +176,49 @@ private void display_picture(long id)
 //--------------------------- PHOTO CAPTURE -----------------------------
 
 // Use the on-board camera to get a new image and store it in the
-// database along with the current GPS coordinates.
-private void capture_image_plus_gps()
+// database along with the current GPS coordinates. This is handled by a
+// separate activity.
+private void capture_image()
 {
-   Recorder R = new ImageRecorder(this) ;
-   //R.capture() ;
-   long new_picture_id = R.store() ;
+   Intent I = new Intent(this, ImageRecorder.class) ;
+   startActivityForResult(I, 0) ; // don't care for request/result codes
+}
 
-   R = new GPSRecorder(this) ;
-   R.capture() ;
-   long new_gps_id = R.store() ;
+/// The photo manager's camera preview-and-capture activity will take a
+/// new picture, store it to the images database and pass back the ID of
+/// the new image's thumbnail to the main screen (i.e., this activity)
+/// using the intent extras mechanism provided by Android.
+///
+/// To be able to properly store and retrieve this value, the camera
+/// preview-and-capture activity screen and this one need to agree on a
+/// suitable key/tag to use. The following string is that key.
+public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
 
-   // TODO: m_db.add(new_picture_id, new_gps_id) ;
-   // TODO: display_picture(get_thumbnail(new_picture_id)) ;
+// Called when a "sub" activity invoked by this "main" one returns
+// control.
+//
+// In the case of this photo manager application, the sub-activity is the
+// camera preview and capture activity that records a new image to the
+// images database along with the current GPS coordinates. When the
+// preview-and-capture activity returns, we want to extract the ID of the
+// newly created image's thumbnail and display the full-sized version of
+// that image.
+//
+// DEVNOTE: Since this activity only starts the camera
+// preview-and-capture sub-activity, we don't care for the result code
+// returned by the sub-activity.
+@Override
+protected void onActivityResult(int request_code, int result_code, Intent I)
+{
+   super.onActivityResult(request_code, result_code, I) ;
+   if (result_code == RESULT_CANCELED)
+      return ;
+
+   long thumbnail_id = I.getExtras().getLong(EXTRAS_THUMBNAIL_ID) ;
+   if (thumbnail_id == -1) // well, that's odd!
+      return ;
+
+   display_picture(thumbnail_id) ;
 }
 
 //------------------------- IMAGE THUMBNAILS ----------------------------
@@ -210,8 +240,9 @@ private Cursor get_thumbnails()
       String[] columns = new String[] {
          Thumbnails._ID,
       } ;
+      String where_clause = Thumbnails.KIND + "=" + Thumbnails.MINI_KIND ;
       return managedQuery(Thumbnails.EXTERNAL_CONTENT_URI, columns,
-                          null, null, null) ;
+                          where_clause, null, null) ;
    }
    catch (android.database.sqlite.SQLiteException e)
    {

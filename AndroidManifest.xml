@@ -74,6 +74,10 @@
    </intent-filter>
 </activity>
 
+<!-- The camera preview-and-capture screen -->
+<activity android:name=".ImageRecorder">
+</activity>
+
 <!-- The picture display screen -->
 <activity android:name=".DisplayScreen">
 </activity>
