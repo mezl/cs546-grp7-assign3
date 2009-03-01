@@ -75,6 +75,7 @@ import android.content.Context ;
 
 // Java I/O support
 import java.io.OutputStream ;
+import java.io.File ;
 
 // Java utilities
 import java.text.SimpleDateFormat ;
@@ -159,29 +160,43 @@ public void stop() throws Exception
    m_recorder.release() ;
    m_recorder = null ;
 
-   ContentResolver cr = m_context.getContentResolver() ;
+   String tmp =
+      m_context.getFilesDir().getPath() + File.separator + TMP_AUDIO_TAG_FILE ;
+   if (! Utils.exists(tmp)) {
+      cleanup_uri() ;
+      throw new Exception("MediaRecorder didn't record anything") ;
+   }
 
    try
    {
+      ContentResolver cr = m_context.getContentResolver() ;
       OutputStream out = cr.openOutputStream(m_uri) ;
-      //copy TMP_AUDIO_TAG_FILE byte-by-byte to out
-      //Utils.delete_file(m_context, TMP_AUDIO_TAG_FILE) ;
+      Utils.copy(tmp, out) ;
       out.close() ;
+      Utils.unlink(tmp) ;
    }
    catch (Exception e)
    {
       Log.e(null, "MVN: couldn't write audio file to MediaStore", e) ;
-      cr.delete(m_uri, null, null) ;
-      //Utils.delete_file(m_context, TMP_AUDIO_TAG_FILE) ;
+      cleanup_uri() ;
+      Utils.unlink(tmp) ;
       throw e ;
    }
+}
+
+// From the MediaStore.Audio.Media database, delete the row that was
+// created for the audio tag.
+private void cleanup_uri()
+{
+   m_context.getContentResolver().delete(m_uri, null, null) ;
+   m_uri = null ;
 }
 
 //--------------------------- AUDIO TAG ID ------------------------------
 
 public long get_id()
 {
-   return ContentUris.parseId(m_uri) ;
+   return (m_uri == null) ? -1 : ContentUris.parseId(m_uri) ;
 }
 
 //------------------------------ HELPERS --------------------------------

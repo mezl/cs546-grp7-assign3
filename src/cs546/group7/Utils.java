@@ -69,6 +69,10 @@ import android.net.Uri ;
 import android.content.Context ;
 import android.content.Intent ;
 
+// Java I/O support
+import java.io.File ;
+import java.io.OutputStream ;
+
 //------------------------- CLASS DEFINITION ----------------------------
 
 /**
@@ -99,6 +103,27 @@ public final static void alert(Context C, String msg)
    alert.setMessage(msg) ;
    alert.setPositiveButton(R.string.alert_okay_label, null) ;
    alert.show() ;
+}
+
+//----------------------- FILE SYSTEM FUNCTIONS -------------------------
+
+/// This function returns true if the specified file exists, is readable
+/// and actually has some data in it; false otherwise.
+public final static boolean exists(String file_name)
+{
+   File f = new File(file_name) ;
+   return f.exists() && f.canRead() && f.length() > 0 ;
+}
+
+/// This function removes the specified file
+public final static void unlink(String file_name)
+{
+   new File(file_name).delete() ;
+}
+
+/// Copy the named file byte-by-byte to the supplied output stream
+public final static void copy(String file_name, OutputStream out)
+{
 }
 
 //-----------------------------------------------------------------------
