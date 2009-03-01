@@ -63,6 +63,15 @@
    <string name="capture_msg">
      Captured from camera by cs546.group7.AssignmentThree on
    </string>
+   <string name="capture_failed_msg">
+     Sorry, unable to capture a picture from the camera
+   </string>
+   <string name="post_capture_query_failed_msg">
+     Sorry, picture captured from the camera could not be queried
+   </string>
+   <string name="bad_gps_msg">
+     Sorry, location data is either stale or unavailable
+   </string>
 
    <string name="picture_tab_label"><big>Picture</big></string>
    <string name="play_audio_tag_menu_item">Play Audio Tag</string>

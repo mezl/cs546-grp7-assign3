@@ -57,6 +57,11 @@ package cs546.group7 ;
 
 //------------------------------ IMPORTS --------------------------------
 
+// Android GPS support
+import android.location.LocationManager ;
+import android.location.Criteria ;
+import android.location.Location ;
+
 // Android camera support
 import android.hardware.Camera ;
 
@@ -74,9 +79,13 @@ import android.graphics.Bitmap ;
 // Android "IPC" support
 import android.provider.MediaStore.Images.Media ;
 import android.content.Intent ;
+import android.content.ContentValues ;
+
+// Android database support
+import android.database.Cursor ;
 
 // Android networking support
-//import android.net.Uri ;
+import android.net.Uri ;
 
 // Android application and OS support
 import android.app.Activity ;
@@ -226,27 +235,85 @@ public void onPictureTaken(byte[] data, Camera camera)
 
    // Stuff the raw camera data into a bitmap image object and store it
    // to the MediaStore.Images database.
-   Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length) ;
-   Media.insertImage(getContentResolver(), image,
-                     title(today), description(today)) ;
+   Bitmap image   = BitmapFactory.decodeByteArray(data, 0, data.length) ;
+   String new_uri = Media.insertImage(getContentResolver(), image,
+                                      title(today), description(today)) ;
+   if (new_uri == null) {
+      Utils.alert(m_context, m_context.getString(R.string.capture_failed_msg));
+      return ;
+   }
+   update(new_uri, today.getTime()) ;
 
-   //TODO: get cursor to above image
-   //TODO: update GPS columns and date
-   //TODO: put thumbnail ID into m_thumbnail_id
+   Location gps_coords = get_gps_coordinates() ;
+   if (gps_coords == null || stale(gps_coords, today))
+      Utils.notify(m_context, m_context.getString(R.string.bad_gps_msg)) ;
+   else
+      update(new_uri, gps_coords.getLatitude(), gps_coords.getLongitude()) ;
+
+   //TODO: find thumbnail matching image ID and KIND = MINI_KIND
+   //TODO: put that thumbnail ID into m_thumbnail_id
 }
 
 // Returns a suitable title for the newly captured image
 private String title(Date d)
 {
    return m_context.getString(R.string.group_name)
-        + new SimpleDateFormat(".yyyyMMddHHmmss").format(d) ;
+        + new SimpleDateFormat(".yyyy-MM-dd.HH:mm:ss").format(d) ;
 }
 
 // Returns a suitable descriptive comment for the newly captured image
 private String description(Date d)
 {
    return m_context.getString(R.string.capture_msg)
-        + new SimpleDateFormat(" EEEE MMMM dd, yyyy 'at' hh:mmaa").format(d) ;
+        + new SimpleDateFormat(" EEEE, MMMM dd, yyyy 'at' hh:mmaa").format(d) ;
+}
+
+// Retrieves the current or last known location
+private Location get_gps_coordinates()
+{
+   try
+   {
+      LocationManager M = (LocationManager)
+         m_context.getSystemService(Context.LOCATION_SERVICE) ;
+
+      Criteria C = new Criteria() ;
+      C.setAccuracy(Criteria.ACCURACY_COARSE) ;
+      C.setAltitudeRequired(false) ;
+      C.setBearingRequired(false) ;
+      C.setSpeedRequired(false) ;
+      C.setCostAllowed(false) ;
+      C.setPowerRequirement(Criteria.POWER_MEDIUM) ;
+
+      return M.getLastKnownLocation(M.getBestProvider(C, false)) ;
+   }
+   catch (Exception e)
+   {
+      return null ;
+   }
+}
+
+// Returns true if the last known location is much older than the current
+// time.
+private boolean stale(Location last_known_location, Date now)
+{
+   return (now.getTime() - last_known_location.getTime()) > 300000 ; // 5 mins
+}
+
+// Time-stamps the image captured by the camera
+private void update(String uri, long date_taken)
+{
+   ContentValues cv = new ContentValues(1) ;
+   cv.put(Media.DATE_TAKEN, date_taken) ;
+   getContentResolver().update(Uri.parse(uri), cv, null, null) ;
+}
+
+// Adds GPS location data to the image captured by the camera
+private void update(String uri, double latitude, double longitude)
+{
+   ContentValues cv = new ContentValues(2) ;
+   cv.put(Media.LATITUDE, latitude) ;
+   cv.put(Media.LONGITUDE, longitude) ;
+   getContentResolver().update(Uri.parse(uri), cv, null, null) ;
 }
 
 } // end of class inner ImageRecorder.ImageCaptureCallback
