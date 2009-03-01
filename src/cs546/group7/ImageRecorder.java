@@ -76,13 +76,9 @@ import android.view.KeyEvent ;
 import android.graphics.BitmapFactory ;
 import android.graphics.Bitmap ;
 
-// Android "IPC" support
+// Android content provider support
 import android.provider.MediaStore.Images.Media ;
-import android.content.Intent ;
 import android.content.ContentValues ;
-
-// Android database support
-import android.database.Cursor ;
 
 // Android networking support
 import android.net.Uri ;
@@ -109,11 +105,6 @@ public class ImageRecorder extends Activity {
 // it shouldn't be surprising that we need this thing:
 private Camera m_camera ;
 
-// Once this activity has captured a new picture from the camera, it will
-// insert it into the MediaStore.Images.Media database and return the ID
-// of the corresponding thumbnail to the main activity.
-private long m_thumbnail_id = -1 ;
-
 //-------------------------- INITIALIZATION -----------------------------
 
 /**
@@ -125,24 +116,6 @@ private long m_thumbnail_id = -1 ;
    super.onCreate(saved_state) ;
    requestWindowFeature(Window.FEATURE_NO_TITLE) ;
    setContentView(new CameraPreview(this)) ;
-}
-
-//----------------------------- CLEAN-UP --------------------------------
-
-// The photo manager app's main activity invokes this one and expects it
-// to pass back the ID of the newly captured picture's thumbnail. This
-// method performs the necessary incantations required to communicate
-// this information back to the main activity.
-private void wind_up(int result_code)
-{
-   Bundle B = new Bundle() ;
-   B.putLong(AssignmentThree.EXTRAS_THUMBNAIL_ID, m_thumbnail_id) ;
-
-   Intent I = new Intent() ;
-   I.putExtras(B) ;
-   setResult(result_code, I) ;
-
-   finish() ;
 }
 
 //-------------------------- KEYBOARD EVENTS ----------------------------
@@ -162,12 +135,12 @@ private void wind_up(int result_code)
    if (key_code == KeyEvent.KEYCODE_DPAD_CENTER)
    {
       m_camera.takePicture(null, null, new ImageCaptureCallback(this)) ;
-      wind_up(RESULT_OK) ;
+      finish() ;
       return true ;
    }
    if (key_code == KeyEvent.KEYCODE_BACK)
    {
-      wind_up(RESULT_CANCELED) ;
+      finish() ;
       return true ;
    }
    return super.onKeyDown(key_code, event) ;
@@ -244,14 +217,13 @@ public void onPictureTaken(byte[] data, Camera camera)
    }
    update(new_uri, today.getTime()) ;
 
+   // Retrieve current location and update captured image's record to
+   // include these attributes.
    Location gps_coords = get_gps_coordinates() ;
    if (gps_coords == null || stale(gps_coords, today))
       Utils.notify(m_context, m_context.getString(R.string.bad_gps_msg)) ;
    else
       update(new_uri, gps_coords.getLatitude(), gps_coords.getLongitude()) ;
-
-   //TODO: find thumbnail matching image ID and KIND = MINI_KIND
-   //TODO: put that thumbnail ID into m_thumbnail_id
 }
 
 // Returns a suitable title for the newly captured image

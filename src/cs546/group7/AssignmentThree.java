@@ -74,8 +74,6 @@ import android.view.Menu ;
 import android.view.MenuItem ;
 import android.view.View ;
 
-import android.content.Intent ;
-
 // Android content-provider support
 import android.provider.MediaStore.Images.Thumbnails ;
 
@@ -85,6 +83,7 @@ import android.database.Cursor ;
 // Android application and OS support
 import android.content.Context ;
 import android.app.Activity ;
+import android.content.Intent ;
 import android.os.Bundle ;
 
 // Android utilities
@@ -180,45 +179,7 @@ private void display_picture(long id)
 // separate activity.
 private void capture_image()
 {
-   Intent I = new Intent(this, ImageRecorder.class) ;
-   startActivityForResult(I, 0) ; // don't care for request/result codes
-}
-
-/// The photo manager's camera preview-and-capture activity will take a
-/// new picture, store it to the images database and pass back the ID of
-/// the new image's thumbnail to the main screen (i.e., this activity)
-/// using the intent extras mechanism provided by Android.
-///
-/// To be able to properly store and retrieve this value, the camera
-/// preview-and-capture activity screen and this one need to agree on a
-/// suitable key/tag to use. The following string is that key.
-public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
-
-// Called when a "sub" activity invoked by this "main" one returns
-// control.
-//
-// In the case of this photo manager application, the sub-activity is the
-// camera preview and capture activity that records a new image to the
-// images database along with the current GPS coordinates. When the
-// preview-and-capture activity returns, we want to extract the ID of the
-// newly created image's thumbnail and display the full-sized version of
-// that image.
-//
-// DEVNOTE: Since this activity only starts the camera
-// preview-and-capture sub-activity, we don't care for the result code
-// returned by the sub-activity.
-@Override
-protected void onActivityResult(int request_code, int result_code, Intent I)
-{
-   super.onActivityResult(request_code, result_code, I) ;
-   if (result_code == RESULT_CANCELED)
-      return ;
-
-   long thumbnail_id = I.getExtras().getLong(EXTRAS_THUMBNAIL_ID) ;
-   if (thumbnail_id == -1) // well, that's odd!
-      return ;
-
-   display_picture(thumbnail_id) ;
+   startActivity(new Intent(this, ImageRecorder.class)) ;
 }
 
 //------------------------- IMAGE THUMBNAILS ----------------------------
