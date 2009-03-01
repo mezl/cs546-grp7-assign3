@@ -83,6 +83,10 @@ import android.app.Activity ;
 import android.content.Context ;
 import android.os.Bundle ;
 
+// Java utilities
+import java.text.SimpleDateFormat ;
+import java.util.Date ;
+
 //------------------------- CLASS DEFINITION ----------------------------
 
 /**
@@ -148,7 +152,7 @@ private void wind_up(int result_code)
 {
    if (key_code == KeyEvent.KEYCODE_DPAD_CENTER)
    {
-      m_camera.takePicture(null, null, new ImageCaptureCallback()) ;
+      m_camera.takePicture(null, null, new ImageCaptureCallback(this)) ;
       wind_up(RESULT_OK) ;
       return true ;
    }
@@ -205,18 +209,44 @@ private class CameraPreview extends SurfaceView
 */
 private class ImageCaptureCallback implements Camera.PictureCallback {
 
+// The callback will need a viable Android context for retrieving
+// resources, querying the MediaStore databases, etc.
+private Context m_context ;
+
+ImageCaptureCallback(Context C)
+{
+   m_context = C ;
+}
+
+/// The Camera device will invoke this function when a picture has been
+/// taken.
 public void onPictureTaken(byte[] data, Camera camera)
 {
+   Date today = new Date() ;
+
    // Stuff the raw camera data into a bitmap image object and store it
    // to the MediaStore.Images database.
    Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length) ;
-   Media.insertImage(getContentResolver(), image, "cs546.group7",
-                     "Captured by cs546.group7.AssignmentThree") ;
+   Media.insertImage(getContentResolver(), image,
+                     title(today), description(today)) ;
 
    //TODO: get cursor to above image
    //TODO: update GPS columns and date
-   //TODO: include date in image title and description
    //TODO: put thumbnail ID into m_thumbnail_id
+}
+
+// Returns a suitable title for the newly captured image
+private String title(Date d)
+{
+   return m_context.getString(R.string.group_name)
+        + new SimpleDateFormat(".yyyyMMddHHmmss").format(d) ;
+}
+
+// Returns a suitable descriptive comment for the newly captured image
+private String description(Date d)
+{
+   return m_context.getString(R.string.capture_msg)
+        + new SimpleDateFormat(" EEEE MMMM dd, yyyy 'at' hh:mmaa").format(d) ;
 }
 
 } // end of class inner ImageRecorder.ImageCaptureCallback

@@ -60,6 +60,10 @@
 
    <string name="add_picture_menu_item">Add a picture</string>
 
+   <string name="capture_msg">
+     Captured from camera by cs546.group7.AssignmentThree on
+   </string>
+
    <string name="picture_tab_label"><big>Picture</big></string>
    <string name="play_audio_tag_menu_item">Play Audio Tag</string>
    <string name="record_audio_tag_menu_item">Record Audio Tag</string>
@@ -67,4 +71,6 @@
    <string name="map_tab_label"><big>Map</big></string>
 
    <string name="alert_okay_label">OK</string>
+
+   <string name="group_name">cs546.group7</string>
 </resources>
