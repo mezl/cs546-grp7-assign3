@@ -215,12 +215,16 @@ private void wind_up_audio()
    try
    {
       m_audio_recorder.stop() ;
-      //m_db.delete_audio(m_full_picture_id) ;
-      //m_db.update_audio(m_full_picture_id, m_audio_recorder.get_id()) ;
+
+      long recording_id = m_audio_recorder.get_id() ;
+      if (recording_id != -1) {
+         //m_db.delete_audio(m_full_picture_id) ;
+         //m_db.update_audio(m_full_picture_id, recording_id) ;
+      }
    }
    catch (Exception e)
    {
-      Log.e(null, "MVN: unable to copy temp audio tag file to database, e") ;
+      Log.e(null, "MVN: unable to copy temp audio tag file to database", e) ;
       Utils.alert(this, getString(R.string.audio_recording_failed_msg)) ;
    }
    m_audio_recorder = null ;
