@@ -76,6 +76,15 @@
    <string name="picture_tab_label"><big>Picture</big></string>
    <string name="play_audio_tag_menu_item">Play Audio Tag</string>
    <string name="record_audio_tag_menu_item">Record Audio Tag</string>
+   <string name="record_audio_msg">
+     Speak into microphone and press center keypad button when done
+   </string>
+   <string name="audio_recorder_init_error_msg">
+     Sorry, unable to create the audio recorder.
+   </string>
+   <string name="audio_recording_failed_msg">
+     Sorry, the audio tag could not be created.
+   </string>
 
    <string name="map_tab_label"><big>Map</big></string>
 

@@ -75,6 +75,8 @@ import android.widget.ImageView ;
 import android.view.Menu ;
 import android.view.MenuItem ;
 
+import android.view.KeyEvent ;
+
 // Android content-provider support
 import android.provider.MediaStore.Images.Media ;
 import android.provider.MediaStore.Images.Thumbnails ;
@@ -121,6 +123,10 @@ public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
 /// Given the thumbnail ID, this class needs to find and display the
 /// corresponding full-sized image.
 private int m_full_picture_id ;
+
+/// We use the following helper objects to playback and record audio tags
+/// for the displayed image.
+private AudioRecorder m_audio_recorder ;
 
 //-------------------------- INITIALIZATION -----------------------------
 
@@ -185,12 +191,70 @@ private void play_audio_tag()
 // Record an audio tag for the displayed image
 private void record_audio_tag()
 {
-   Recorder R = new AudioRecorder(this) ;
-   R.capture() ;
-   long new_audio_id = R.store() ;
+   Utils.notify_long(this, getString(R.string.record_audio_msg)) ;
 
-   // TODO: m_db.delete_audio(m_full_picture_id) ;
-   // TODO: m_db.update_audio(m_full_picture_id, new_audio_id) ;
+   try
+   {
+      m_audio_recorder = new AudioRecorder(this) ;
+      m_audio_recorder.start() ;
+   }
+   catch (Exception e)
+   {
+      Log.e(null, "MVN: unable to create AudioRecorder", e) ;
+      Utils.alert(this, getString(R.string.audio_recorder_init_error_msg)) ;
+   }
+}
+
+// Stop an audio recording currently in progress and connect it to the
+// currently displayed image.
+private void wind_up_audio()
+{
+   if (m_audio_recorder == null) // no audio recording in progress
+      return ;
+
+   try
+   {
+      m_audio_recorder.stop() ;
+      //m_db.delete_audio(m_full_picture_id) ;
+      //m_db.update_audio(m_full_picture_id, m_audio_recorder.get_id()) ;
+   }
+   catch (Exception e)
+   {
+      Log.e(null, "MVN: unable to copy temp audio tag file to database, e") ;
+      Utils.alert(this, getString(R.string.audio_recording_failed_msg)) ;
+   }
+   m_audio_recorder = null ;
+}
+
+//-------------------------- KEYBOARD EVENTS ----------------------------
+
+/**
+   This method is called when the activity receives a keyboard event. In
+   the case of this activity, i.e., full-size image display, we respond
+   to presses of the center trackball/mouse button by stopping the audio
+   tag recording if it is in progress and then storing the ID of this
+   newly created audio tag in the application's database linking images
+   with their corresponding audio tags.
+
+   In case users press the back button, we return to the photo manager's
+   main screen. But if an audio tag is being recorded, then we end the
+   process gracefully, perform the database update and then return to the
+   main screen.
+*/
+@Override public boolean onKeyDown(int key_code, KeyEvent event)
+{
+   if (key_code == KeyEvent.KEYCODE_DPAD_CENTER)
+   {
+      wind_up_audio() ;
+      return true ;
+   }
+   if (key_code == KeyEvent.KEYCODE_BACK)
+   {
+      wind_up_audio() ;
+      finish() ;
+      return true ;
+   }
+   return super.onKeyDown(key_code, event) ;
 }
 
 //-------------------------- PICTURE DISPLAY ----------------------------
