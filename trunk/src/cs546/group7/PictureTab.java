@@ -77,6 +77,10 @@ import android.view.MenuItem ;
 
 import android.view.KeyEvent ;
 
+// Android graphics support
+import android.graphics.BitmapFactory ;
+import android.graphics.Bitmap ;
+
 // Android content-provider support
 import android.provider.MediaStore.Images.Media ;
 import android.provider.MediaStore.Images.Thumbnails ;
@@ -91,6 +95,11 @@ import android.os.Bundle ;
 // Android utilities
 import android.content.ContentUris ;
 import android.util.Log ;
+
+// Java I/O support
+import java.io.InputStream ;
+import java.io.FileNotFoundException ;
+import java.io.IOException ;
 
 //-------------------- DISPLAY SCREEN PICTURE TAB -----------------------
 
@@ -265,9 +274,30 @@ private void wind_up_audio()
 
 private void display_picture(long picture_id)
 {
-   ImageView img = (ImageView) findViewById(R.id.full_picture) ;
-   img.setImageURI(ContentUris.withAppendedId(Media.EXTERNAL_CONTENT_URI,
-                                              picture_id)) ;
+   try
+   {
+      InputStream is = getContentResolver().
+         openInputStream(ContentUris.withAppendedId(Media.EXTERNAL_CONTENT_URI,
+                                                    picture_id)) ;
+
+      BitmapFactory.Options options = new BitmapFactory.Options() ;
+      options.inSampleSize = 4 ;
+      Bitmap bmp = BitmapFactory.decodeStream(is, null, options) ;
+      is.close() ;
+
+      if (bmp != null) {
+         ImageView img = (ImageView) findViewById(R.id.full_picture) ;
+         img.setImageBitmap(bmp) ;
+      }
+   }
+   catch (FileNotFoundException e)
+   {
+      Log.e(null, "MVN: unable to read image ID " + picture_id, e) ;
+   }
+   catch (IOException e)
+   {
+      Log.e(null, "MVN: unable to close bitmap input stream", e) ;
+   }
 }
 
 //------------------------------ HELPERS --------------------------------
