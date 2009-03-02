@@ -72,6 +72,9 @@
 <!-- the picture selected on the app's main screen was acquired.      -->
 <com.google.android.maps.MapView
    xmlns:android="http://schemas.android.com/apk/res/android"
+   android:id="@+id/map"
    android:layout_width="fill_parent"
    android:layout_height="fill_parent"
-   android:apiKey="0f4mXGQy_S6Mzw67t85OfT9GshqBrzBrceeBGKA"/>
+   android:enabled="true"
+   android:clickable="true"
+   android:apiKey="0ynLm88xUe2XpHY9UxnMouyLxSO3I8kmmFt3wCw"/>
