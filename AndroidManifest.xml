@@ -90,6 +90,9 @@
 <activity android:name=".MapTab">
 </activity>
 
+<!-- For the Google Maps API -->
+<uses-library android:name="com.google.android.maps"/>
+
 </application>
 
 <!--========================== PERMISSIONS ===========================-->

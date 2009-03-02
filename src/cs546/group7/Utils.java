@@ -153,6 +153,8 @@ public final static LatLong gps_coords(Activity A, int image_id)
          C.moveToFirst() ;
          double lat = C.getDouble(C.getColumnIndex(Images.Media.LATITUDE)) ;
          double lon = C.getDouble(C.getColumnIndex(Images.Media.LONGITUDE)) ;
+         Log.e(null, "image ID " + image_id + ": lat = " + lat
+                                            + ", lon = " + lon) ;
          if (lat != 0 && lon != 0)
             return new LatLong(lat, lon) ;
       }
