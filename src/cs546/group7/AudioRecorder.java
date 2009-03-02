@@ -73,6 +73,9 @@ import android.util.Log ;
 // Android application and OS support
 import android.content.Context ;
 
+// Android utilities
+import android.util.Log ;
+
 // Java I/O support
 import java.io.OutputStream ;
 import java.io.File ;
@@ -136,16 +139,25 @@ public AudioRecorder(Context C) throws InstantiationException
 
 /// This method captures some audio from the phone's mic and sends the
 /// output to the temp tag file.
-public void start()
+public void start() throws Exception
 {
-   m_recorder = new MediaRecorder() ;
-   m_recorder.setAudioSource(MediaRecorder.AudioSource.MIC) ;
-   m_recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP) ;
-   m_recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB) ;
-   m_recorder.setOutputFile(m_audio_file) ;
+   try
+   {
+      m_recorder = new MediaRecorder() ;
+      m_recorder.setAudioSource(MediaRecorder.AudioSource.MIC) ;
+      m_recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP) ;
+      m_recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB) ;
+      m_recorder.setOutputFile(m_audio_file) ;
 
-   m_recorder.prepare() ;
-   m_recorder.start() ;
+      m_recorder.prepare() ;
+      m_recorder.start() ;
+   }
+   catch (Exception e)
+   {
+      Log.e(null, "MVN: MediaRecorder init error", e) ;
+      cleanup_uri() ;
+      throw e ;
+   }
 }
 
 //----------------------------- CLEAN-UP --------------------------------
