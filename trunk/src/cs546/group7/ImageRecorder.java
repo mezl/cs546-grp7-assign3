@@ -58,9 +58,7 @@ package cs546.group7 ;
 //------------------------------ IMPORTS --------------------------------
 
 // Android GPS support
-import android.location.LocationManager ;
-import android.location.Criteria ;
-import android.location.Location ;
+import android.location.* ;
 
 // Android camera support
 import android.hardware.Camera ;
@@ -119,6 +117,67 @@ private Camera m_camera ;
    super.onCreate(saved_state) ;
    requestWindowFeature(Window.FEATURE_NO_TITLE) ;
    setContentView(new CameraPreview(this)) ;
+}
+
+LocationManager m_location_manager ;
+Location m_location ;
+
+LocationListener m_location_listener = new LocationListener() {
+   public void onProviderDisabled(String provider) {
+      m_location = null ;
+   }
+
+   public void onLocationChanged(Location L) {
+      m_location = L ;
+      m_location_manager.removeUpdates(m_location_listener) ;
+   } ;
+
+   public void onProviderEnabled(String provider) {}
+   public void onStatusChanged(String provider, int status, Bundle extras) {}
+} ;
+
+@Override public void onStart()
+{
+   try
+   {
+      m_location_manager = (LocationManager)
+         getSystemService(Context.LOCATION_SERVICE) ;
+
+      Criteria C = new Criteria() ;
+      C.setAccuracy(Criteria.ACCURACY_FINE) ;
+      C.setAltitudeRequired(false) ;
+      C.setBearingRequired(false) ;
+      C.setSpeedRequired(false) ;
+      C.setCostAllowed(false) ;
+      C.setPowerRequirement(Criteria.POWER_MEDIUM) ;
+
+      String location_provider = m_location_manager.getBestProvider(C, true) ;
+      if (location_provider != null) {
+         Location last_known_location =
+            m_location_manager.getLastKnownLocation(location_provider) ;
+         if (last_known_location == null) // bogus GPS
+            m_location_manager.requestLocationUpdates(location_provider,
+                                                      10000, 100,
+                                                      m_location_listener) ;
+         else { // got good last known location
+            m_location = last_known_location ;
+            m_location_manager.removeUpdates(m_location_listener) ;
+         }
+      }
+   }
+   catch (Exception e)
+   {
+      Log.e(null, "MVN: location manager fiasco", e) ;
+   }
+}
+
+//----------------------------- CLEAN-UP --------------------------------
+
+@Override public void onStop()
+{
+   super.onStop() ;
+   if (m_location_manager != null)
+      m_location_manager.removeUpdates(m_location_listener) ;
 }
 
 //-------------------------- KEYBOARD EVENTS ----------------------------
@@ -222,11 +281,14 @@ public void onPictureTaken(byte[] data, Camera camera)
 
    // Retrieve current location and update captured image's record to
    // include these attributes.
-   Location gps_coords = get_gps_coordinates() ;
+   ///*
+   //Location gps_coords = get_gps_coordinates() ;
+   Location gps_coords = m_location ;
    if (gps_coords == null || stale(gps_coords, today))
       Log.e(null, "MVN: unable to obtain GPS location fix for new image") ;
    else
       update(new_uri, gps_coords.getLatitude(), gps_coords.getLongitude()) ;
+   //*/
 }
 
 // Returns a suitable title for the newly captured image
