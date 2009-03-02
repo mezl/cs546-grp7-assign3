@@ -122,16 +122,6 @@ import java.io.IOException ;
 */
 public class PictureTab extends Activity {
 
-/// The photo manager's main screen passes in the ID of the selected
-/// thumbnail to display screen using the intent extras mechanism
-/// provided by Android. The display screen, in turn, passes this ID in
-/// to this tab via the same mechanism.
-///
-/// To be able to properly store and retrieve this value, the display
-/// screen and this tab need to agree on a suitable key/tag to use. The
-/// following string is that key.
-public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
-
 // Given the thumbnail ID, this class needs to find and display the
 // corresponding full-sized image.
 private int m_full_picture_id ;
@@ -162,8 +152,8 @@ private MediaPlayer   m_audio_player ;
    m_db = new AudioTagsDB(this) ;
    m_db.open() ;
 
-   Bundle extras = getIntent().getExtras() ;
-   m_full_picture_id = full_picture_id(extras.getLong(EXTRAS_THUMBNAIL_ID)) ;
+   m_full_picture_id = Utils.full_picture_id(this,
+      getIntent().getExtras().getLong(Utils.EXTRAS_THUMBNAIL_ID)) ;
 
    display_picture(m_full_picture_id) ;
 }
@@ -376,32 +366,6 @@ private void display_picture(long picture_id)
    {
       Log.e(null, "MVN: unable to close bitmap input stream", e) ;
    }
-}
-
-//------------------------------ HELPERS --------------------------------
-
-// Return ID of full-sized image corresponding to specified thumbnail
-private int full_picture_id(long thumbnail_id)
-{
-   try
-   {
-      String[] columns = new String[] {
-         Images.Thumbnails._ID,
-         Images.Thumbnails.IMAGE_ID,
-      } ;
-      String where_clause = Images.Thumbnails._ID + "=" + thumbnail_id ;
-      Cursor C = managedQuery(Images.Thumbnails.EXTERNAL_CONTENT_URI,
-                              columns, where_clause, null, null) ;
-      if (C.getCount() > 0) {
-         C.moveToFirst() ;
-         return C.getInt(C.getColumnIndex(Images.Thumbnails.IMAGE_ID)) ;
-      }
-   }
-   catch (android.database.sqlite.SQLiteException e)
-   {
-      Log.e(null, "MVN: unable to retrieve thumbnails", e) ;
-   }
-   return -1 ;
 }
 
 //-----------------------------------------------------------------------

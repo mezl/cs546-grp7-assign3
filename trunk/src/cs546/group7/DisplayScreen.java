@@ -94,13 +94,6 @@ import android.os.Bundle ;
 */
 public class DisplayScreen extends TabActivity {
 
-/// The photo manager's main screen passes in the ID of the selected
-/// thumbnail to this screen using the intent extras mechanism provided
-/// by Android. To be able to properly store and retrieve this value,
-/// both screens need to agree on a suitable key/tag to use. The
-/// following string is that key.
-public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
-
 //-------------------------- INITIALIZATION -----------------------------
 
 /**
@@ -119,7 +112,7 @@ public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
 
    // Retrieve the ID of the selected thumbnail from the extras bundle
    Bundle extras = getIntent().getExtras() ;
-   long id = extras.getLong(EXTRAS_THUMBNAIL_ID) ;
+   long id = extras.getLong(Utils.EXTRAS_THUMBNAIL_ID) ;
 
    // Setup the picture and map tabs
    final TabHost H = getTabHost() ;
@@ -130,7 +123,7 @@ public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
 private void setup_picture_tab(final TabHost H, long thumbnail_id)
 {
    Intent I = new Intent(this, PictureTab.class) ;
-   I.putExtra(PictureTab.EXTRAS_THUMBNAIL_ID, thumbnail_id) ;
+   I.putExtra(Utils.EXTRAS_THUMBNAIL_ID, thumbnail_id) ;
 
    TabHost.TabSpec tab = H.newTabSpec("picture_tab") ;
    tab.setIndicator(getString(R.string.picture_tab_label),
@@ -142,7 +135,7 @@ private void setup_picture_tab(final TabHost H, long thumbnail_id)
 private void setup_map_tab(final TabHost H, long thumbnail_id)
 {
    Intent I = new Intent(this, MapTab.class) ;
-   //I.putExtra(MapTab.EXTRAS_THUMBNAIL_ID, thumbnail_id) ;
+   I.putExtra(Utils.EXTRAS_THUMBNAIL_ID, thumbnail_id) ;
 
    TabHost.TabSpec tab = H.newTabSpec("map_tab") ;
    tab.setIndicator(getString(R.string.map_tab_label),

@@ -88,6 +88,9 @@ import android.app.Activity ;
 import android.content.Context ;
 import android.os.Bundle ;
 
+// Android utilities
+import android.util.Log ;
+
 // Java utilities
 import java.text.SimpleDateFormat ;
 import java.util.Date ;
@@ -221,7 +224,7 @@ public void onPictureTaken(byte[] data, Camera camera)
    // include these attributes.
    Location gps_coords = get_gps_coordinates() ;
    if (gps_coords == null || stale(gps_coords, today))
-      Utils.notify(m_context, m_context.getString(R.string.bad_gps_msg)) ;
+      Log.e(null, "MVN: unable to obtain GPS location fix for new image") ;
    else
       update(new_uri, gps_coords.getLatitude(), gps_coords.getLongitude()) ;
 }
