@@ -104,15 +104,10 @@ private MediaRecorder m_recorder ;
 // from the MediaStore URI for the recording.
 private Uri m_uri ;
 
-// Although the recording is meant to be stored in the
-// MediaStore.Audio.Media database, the Android MediaRecorder actually
-// records to a file in the application's files area. To put this audio
-// data into the database, we have to copy the file to the database
-// ourselves.
-//
-// Since the rest of the application deals only with the database, we
-// consider the audio file recorded by MediaRecorder to be a temporary.
-private static final String TMP_AUDIO_TAG_FILE = "tmp.3gpp" ;
+// Although the details of the audio tag are stored in the
+// MediaStore.Audio.Media database, its actual contents are stored in a
+// file in our application's files area.
+private String m_audio_file ;
 
 //-------------------------- INITIALIZATION -----------------------------
 
@@ -124,15 +119,19 @@ public AudioRecorder(Context C) throws InstantiationException
 {
    m_context = C ;
 
-   ContentValues cv = new ContentValues(2) ;
-   cv.put(Media.TITLE, title()) ;
+   String group = C.getString(R.string.group_name) ;
+   String title = group +
+      new SimpleDateFormat(".yyyy-MM-dd.HH:mm:ss").format(new Date()) ;
+   m_audio_file = C.getFilesDir().getPath() + File.separator + title ;
+
+   ContentValues cv = new ContentValues(3) ;
+   cv.put(Media.DATA, m_audio_file) ;
+   cv.put(Media.TITLE, title) ;
    cv.put(Media.MIME_TYPE, "audio/3gpp") ;
 
    m_uri = C.getContentResolver().insert(Media.INTERNAL_CONTENT_URI, cv) ;
-   if (m_uri == null) {
-      m_recorder = null ;
+   if (m_uri == null)
       throw new InstantiationException("unable to create new audio file") ;
-   }
 }
 
 /// This method captures some audio from the phone's mic and sends the
@@ -143,7 +142,7 @@ public void start()
    m_recorder.setAudioSource(MediaRecorder.AudioSource.MIC) ;
    m_recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP) ;
    m_recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB) ;
-   m_recorder.setOutputFile(TMP_AUDIO_TAG_FILE) ;
+   m_recorder.setOutputFile(m_audio_file) ;
 
    m_recorder.prepare() ;
    m_recorder.start() ;
@@ -160,27 +159,9 @@ public void stop() throws Exception
    m_recorder.release() ;
    m_recorder = null ;
 
-   String tmp =
-      m_context.getFilesDir().getPath() + File.separator + TMP_AUDIO_TAG_FILE ;
-   if (! Utils.exists(tmp)) {
+   if (! Utils.exists(m_audio_file)) {
       cleanup_uri() ;
       throw new Exception("MediaRecorder didn't record anything") ;
-   }
-
-   try
-   {
-      ContentResolver cr = m_context.getContentResolver() ;
-      OutputStream out = cr.openOutputStream(m_uri) ;
-      Utils.copy(tmp, out) ;
-      out.close() ;
-      Utils.unlink(tmp) ;
-   }
-   catch (Exception e)
-   {
-      Log.e(null, "MVN: couldn't write audio file to MediaStore", e) ;
-      cleanup_uri() ;
-      Utils.unlink(tmp) ;
-      throw e ;
    }
 }
 
@@ -197,15 +178,6 @@ private void cleanup_uri()
 public long get_id()
 {
    return (m_uri == null) ? -1 : ContentUris.parseId(m_uri) ;
-}
-
-//------------------------------ HELPERS --------------------------------
-
-// Return a suitable title for the audio tag
-private String title()
-{
-   return m_context.getString(R.string.group_name)
-        + new SimpleDateFormat(".yyyy-MM-dd.HH:mm:ss").format(new Date()) ;
 }
 
 //-----------------------------------------------------------------------
