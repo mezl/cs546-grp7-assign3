@@ -103,7 +103,7 @@ public static final String AUDIO_TAGS_TABLE = "audio_tags" ;
 // The SQL statements used to create the above table
 private static final String CREATE_AUDIO_TAGS_TABLE =
     "CREATE TABLE " + AUDIO_TAGS_TABLE + "("
-   + _ID       + " LONG PRIMARY KEY AUTOINCREMENT, "
+   + _ID       + " INTEGER PRIMARY KEY AUTOINCREMENT, "
    + IMAGE_ID  + " LONG NOT NULL, "
    + AUDIO_ID  + " LONG NOT NULL) ; " ;
 
