@@ -70,8 +70,10 @@ import android.content.Context ;
 import android.content.Intent ;
 
 // Java I/O support
-import java.io.File ;
+import java.io.FileInputStream ;
+import java.io.InputStream ;
 import java.io.OutputStream ;
+import java.io.File ;
 
 //------------------------- CLASS DEFINITION ----------------------------
 
@@ -122,8 +124,15 @@ public final static void unlink(String file_name)
 }
 
 /// Copy the named file byte-by-byte to the supplied output stream
-public final static void copy(String file_name, OutputStream out)
+public final static
+void copy(String file_name, OutputStream out) throws Exception
 {
+   InputStream in = new FileInputStream(file_name) ;
+   byte[] buf = new byte[512] ;
+   int len ;
+   while ((len = in.read(buf)) > 0)
+      out.write(buf, 0, len) ;
+   in.close() ;
 }
 
 //-----------------------------------------------------------------------
