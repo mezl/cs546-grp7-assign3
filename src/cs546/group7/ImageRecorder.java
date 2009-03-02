@@ -138,7 +138,7 @@ private Camera m_camera ;
    if (key_code == KeyEvent.KEYCODE_DPAD_CENTER)
    {
       m_camera.takePicture(null, null, new ImageCaptureCallback(this)) ;
-      finish() ;
+      //finish() ;
       return true ;
    }
    if (key_code == KeyEvent.KEYCODE_BACK)

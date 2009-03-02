@@ -61,6 +61,7 @@ import android.app.AlertDialog ;
 
 // Android content provider support
 import android.provider.MediaStore.Images ;
+import android.provider.MediaStore.Audio ;
 
 // Android networking support
 import android.net.Uri ;
@@ -162,6 +163,34 @@ public final static LatLong gps_coords(Activity A, int image_id)
    catch (android.database.sqlite.SQLiteException e)
    {
       Log.e(null, "MVN: unable to retrieve image ID " + image_id, e) ;
+   }
+   return null ;
+}
+
+//-------------------------- AUDIO UTILITIES ----------------------------
+
+/// Retrieve the name of the audio file corresponding to the specified ID
+public final static String get_audio_file_name(Activity A, long audio_id)
+{
+   try
+   {
+      String[] columns = new String[] {
+         Audio.Media._ID,
+         Audio.Media.DATA,
+      } ;
+      String where_clause = Audio.Media._ID + "=" + audio_id ;
+      Cursor C = A.managedQuery(Audio.Media.INTERNAL_CONTENT_URI, columns,
+                                where_clause, null, null) ;
+      if (C.getCount() > 0) {
+         C.moveToFirst() ;
+         String audio_file = C.getString(C.getColumnIndex(Audio.Media.DATA)) ;
+         C.close() ;
+         return audio_file ;
+      }
+   }
+   catch (android.database.sqlite.SQLiteException e)
+   {
+      Log.e(null, "MVN: unable to retrieve audio ID " + audio_id, e) ;
    }
    return null ;
 }

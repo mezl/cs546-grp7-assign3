@@ -231,8 +231,12 @@ private void play_audio_tag()
          return ;
       }
 
-      m_audio_player = MediaPlayer.create(this, ContentUris.withAppendedId(
-         Audio.Media.INTERNAL_CONTENT_URI, audio_id)) ;
+      m_audio_player = new MediaPlayer() ;
+      if (m_audio_player == null) {
+         Utils.alert(this, getString(R.string.audio_player_init_error_msg)) ;
+         return ;
+      }
+      m_audio_player.setDataSource(Utils.get_audio_file_name(this, audio_id)) ;
       m_audio_player.prepare() ;
       m_audio_player.start() ;
 
