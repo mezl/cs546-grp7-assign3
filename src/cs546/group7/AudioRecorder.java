@@ -125,7 +125,7 @@ public AudioRecorder(Context C) throws InstantiationException
    String group = C.getString(R.string.group_name) ;
    String title = group +
       new SimpleDateFormat(".yyyy-MM-dd.HH:mm:ss").format(new Date()) ;
-   m_audio_file = C.getFilesDir().getPath() + File.separator + title ;
+   m_audio_file = C.getFilesDir().getPath() + File.separator + title + ".3gp" ;
 
    ContentValues cv = new ContentValues(3) ;
    cv.put(Media.DATA, m_audio_file) ;
