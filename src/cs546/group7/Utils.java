@@ -59,15 +59,22 @@ package cs546.group7 ;
 import android.widget.Toast ;
 import android.app.AlertDialog ;
 
-// Android services
-import android.media.MediaScannerConnection ;
+// Android content provider support
+import android.provider.MediaStore.Images ;
 
 // Android networking support
 import android.net.Uri ;
 
+// Android database support
+import android.database.Cursor ;
+
 // Android application and OS support
+import android.app.Activity ;
 import android.content.Context ;
 import android.content.Intent ;
+
+// Android utilities
+import android.util.Log ;
 
 // Java I/O support
 import java.io.FileInputStream ;
@@ -81,6 +88,81 @@ import java.io.File ;
    This class provides several handy utility functions.
 */
 class Utils {
+
+/// The photo manager's main screen passes the ID of the selected
+/// thumbnail to the display screen, which, in turn, passes it on to the
+/// picture and map tabs. This parameter is passed between the activities
+/// using Android's intent extras mechanism. To be able to properly store
+/// and retrieve this value, all the activities that need this parameter
+/// must agree on a suitable key/tag to use. The following string is that
+/// key.
+public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
+
+//-------------------------- GPS COORDINATES ----------------------------
+
+/// A simple pair to hold latitude and longitude
+public static final class LatLong {
+   public double latitude ;
+   public double longitude ;
+
+   public LatLong(double latitude, double longitude) {
+      this.latitude  = latitude ;
+      this.longitude = longitude ;
+   }
+}
+
+//-------------------------- IMAGE UTILITIES ----------------------------
+
+/// Return ID of full-sized image corresponding to specified thumbnail
+public final static int full_picture_id(Activity A, long thumbnail_id)
+{
+   try
+   {
+      String[] columns = new String[] {
+         Images.Thumbnails._ID,
+         Images.Thumbnails.IMAGE_ID,
+      } ;
+      String where_clause = Images.Thumbnails._ID + "=" + thumbnail_id ;
+      Cursor C = A.managedQuery(Images.Thumbnails.EXTERNAL_CONTENT_URI,
+                                columns, where_clause, null, null) ;
+      if (C.getCount() > 0) {
+         C.moveToFirst() ;
+         return C.getInt(C.getColumnIndex(Images.Thumbnails.IMAGE_ID)) ;
+      }
+   }
+   catch (android.database.sqlite.SQLiteException e)
+   {
+      Log.e(null, "MVN: unable to retrieve thumbnail ID " + thumbnail_id, e) ;
+   }
+   return -1 ;
+}
+
+/// Return the GPS coordinates corresponding to the specified image
+public final static LatLong gps_coords(Activity A, int image_id)
+{
+   try
+   {
+      String[] columns = new String[] {
+         Images.Media._ID,
+         Images.Media.LATITUDE, Images.Media.LONGITUDE,
+      } ;
+      String where_clause = Images.Media._ID + "=" + image_id ;
+      Cursor C = A.managedQuery(Images.Media.EXTERNAL_CONTENT_URI,
+                                columns, where_clause, null, null) ;
+      if (C.getCount() > 0) {
+         C.moveToFirst() ;
+         double lat = C.getDouble(C.getColumnIndex(Images.Media.LATITUDE)) ;
+         double lon = C.getDouble(C.getColumnIndex(Images.Media.LONGITUDE)) ;
+         if (lat != 0 && lon != 0)
+            return new LatLong(lat, lon) ;
+      }
+   }
+   catch (android.database.sqlite.SQLiteException e)
+   {
+      Log.e(null, "MVN: unable to retrieve image ID " + image_id, e) ;
+   }
+   return null ;
+}
 
 //------------------------- UI NOTIFICATIONS ----------------------------
 

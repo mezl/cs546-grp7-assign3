@@ -101,7 +101,15 @@ public class MapTab extends Activity {
 @Override public void onCreate(Bundle saved_state)
 {
    super.onCreate(saved_state) ;
-   setContentView(R.layout.map_tab) ;
+
+   int image_id = Utils.full_picture_id(this,
+      getIntent().getExtras().getLong(Utils.EXTRAS_THUMBNAIL_ID)) ;
+
+   Utils.LatLong gps = Utils.gps_coords(this, image_id) ;
+   if (gps == null)
+      setContentView(R.layout.map_empty_tab) ;
+   else
+      setContentView(R.layout.map_tab) ;
 }
 
 //-----------------------------------------------------------------------

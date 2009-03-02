@@ -168,7 +168,7 @@ private GridView m_thumbnails_grid ;
 private void display_picture(long id)
 {
    Intent I = new Intent(this, DisplayScreen.class) ;
-   I.putExtra(DisplayScreen.EXTRAS_THUMBNAIL_ID, id) ;
+   I.putExtra(Utils.EXTRAS_THUMBNAIL_ID, id) ;
    startActivity(I) ;
 }
 
