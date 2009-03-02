@@ -175,7 +175,7 @@ public long get_audio_id(long image_id)
 }
 
 /// Updates the audio tag ID corresponding to the specfied image
-public void update(long image_id, long audio_id)
+public void update(long image_id, long new_audio_id)
 {
    String[] columns    = new String[] {_ID, IMAGE_ID, AUDIO_ID} ;
    String where_clause = IMAGE_ID + " = " + image_id ;
@@ -187,7 +187,7 @@ public void update(long image_id, long audio_id)
    {
       ContentValues v = new ContentValues(2) ;
       v.put(IMAGE_ID, image_id) ;
-      v.put(AUDIO_ID, audio_id) ;
+      v.put(AUDIO_ID, new_audio_id) ;
       m_db.insert(AUDIO_TAGS_TABLE, null, v) ;
    }
    else // update existing entry
@@ -198,15 +198,38 @@ public void update(long image_id, long audio_id)
 
       ContentValues v = new ContentValues(2) ;
       v.put(IMAGE_ID, image_id) ;
-      v.put(AUDIO_ID, audio_id) ;
+      v.put(AUDIO_ID, new_audio_id) ;
       m_db.update(AUDIO_TAGS_TABLE, v,
                   _ID + "=" + c.getLong(c.getColumnIndex(_ID)), null) ;
    }
 }
 
-/// Delete the specified audio tag from MediaStore.Audio.Media
+/// Delete the specified audio tag from MediaStore.Audio.Media. But
+/// before doing that, get the name of the audio file and delete it.
 public void delete_audio(long audio_id)
 {
+   try
+   {
+      String[] columns = new String[] {
+         Audio.Media._ID,
+         Audio.Media.DATA,
+      } ;
+      String where_clause = Audio.Media._ID + "=" + audio_id ;
+      Cursor C = ((Activity) m_context).
+         managedQuery(Audio.Media.INTERNAL_CONTENT_URI, columns,
+                      where_clause, null, null) ;
+      if (C.getCount() > 0) {
+         C.moveToFirst() ;
+         String audio_file = C.getString(C.getColumnIndex(Audio.Media.DATA)) ;
+         Utils.unlink(audio_file) ;
+         C.close() ;
+      }
+   }
+   catch (android.database.sqlite.SQLiteException e)
+   {
+      Log.e(null, "MVN: unable to retrieve audio ID " + audio_id, e) ;
+   }
+
    m_context.getContentResolver().delete(ContentUris.withAppendedId(
       Audio.Media.INTERNAL_CONTENT_URI, audio_id), null, null) ;
 }
