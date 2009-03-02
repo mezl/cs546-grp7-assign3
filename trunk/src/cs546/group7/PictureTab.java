@@ -241,8 +241,7 @@ private void play_audio_tag()
          return ;
       }
 
-      m_audio_player = new MediaPlayer() ;
-      m_audio_player.setDataSource(this, ContentUris.withAppendedId(
+      m_audio_player = MediaPlayer.create(this, ContentUris.withAppendedId(
          Audio.Media.INTERNAL_CONTENT_URI, audio_id)) ;
       m_audio_player.prepare() ;
       m_audio_player.start() ;

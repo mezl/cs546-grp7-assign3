@@ -94,7 +94,7 @@
 
 <!--========================== PERMISSIONS ===========================-->
 
-
+<uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
 <!--===================== MANIFEST BOILERPLATE =======================-->
 
