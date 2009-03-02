@@ -208,28 +208,7 @@ public void update(long image_id, long new_audio_id)
 /// before doing that, get the name of the audio file and delete it.
 public void delete_audio(long audio_id)
 {
-   try
-   {
-      String[] columns = new String[] {
-         Audio.Media._ID,
-         Audio.Media.DATA,
-      } ;
-      String where_clause = Audio.Media._ID + "=" + audio_id ;
-      Cursor C = ((Activity) m_context).
-         managedQuery(Audio.Media.INTERNAL_CONTENT_URI, columns,
-                      where_clause, null, null) ;
-      if (C.getCount() > 0) {
-         C.moveToFirst() ;
-         String audio_file = C.getString(C.getColumnIndex(Audio.Media.DATA)) ;
-         Utils.unlink(audio_file) ;
-         C.close() ;
-      }
-   }
-   catch (android.database.sqlite.SQLiteException e)
-   {
-      Log.e(null, "MVN: unable to retrieve audio ID " + audio_id, e) ;
-   }
-
+   Utils.unlink(Utils.get_audio_file_name((Activity) m_context, audio_id)) ;
    m_context.getContentResolver().delete(ContentUris.withAppendedId(
       Audio.Media.INTERNAL_CONTENT_URI, audio_id), null, null) ;
 }
