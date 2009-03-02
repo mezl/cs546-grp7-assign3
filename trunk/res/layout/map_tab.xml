@@ -70,8 +70,8 @@
 
 <!-- The map tab shows just one thing: a map of the vicinity of where -->
 <!-- the picture selected on the app's main screen was acquired.      -->
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
-           android:id="@+id/map"
-           android:layout_width="fill_parent"
-           android:layout_height="fill_parent"
-           android:scaleType="centerCrop"/>
+<com.google.android.maps.MapView
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   android:layout_width="fill_parent"
+   android:layout_height="fill_parent"
+   android:apiKey="0f4mXGQy_S6Mzw67t85OfT9GshqBrzBrceeBGKA"/>

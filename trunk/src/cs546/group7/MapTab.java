@@ -71,6 +71,9 @@ package cs546.group7 ;
 
 //------------------------------ IMPORTS --------------------------------
 
+// Google maps API
+import com.google.android.maps.MapActivity ;
+
 // Android application and OS support
 import android.app.Activity ;
 import android.os.Bundle ;
@@ -89,8 +92,7 @@ import android.os.Bundle ;
    where the picture was taken. A pin is drawn on the exact spot where
    the picture was taken.
 */
-//public class MapTab extends com.google.android.maps.MapActivity {
-public class MapTab extends Activity {
+public class MapTab extends MapActivity {
 
 //-------------------------- INITIALIZATION -----------------------------
 
@@ -110,6 +112,15 @@ public class MapTab extends Activity {
       setContentView(R.layout.map_empty_tab) ;
    else
       setContentView(R.layout.map_tab) ;
+}
+
+//----------------------- MAPS API REQUIREMENTS -------------------------
+
+// All apps that use the Google Maps API are required to implement this
+// routine.
+@Override protected boolean isRouteDisplayed()
+{
+   return false ;
 }
 
 //-----------------------------------------------------------------------
