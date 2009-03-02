@@ -77,13 +77,16 @@ import android.view.MenuItem ;
 
 import android.view.KeyEvent ;
 
+// Android media support
+import android.media.MediaPlayer ;
+
 // Android graphics support
 import android.graphics.BitmapFactory ;
 import android.graphics.Bitmap ;
 
 // Android content-provider support
-import android.provider.MediaStore.Images.Media ;
-import android.provider.MediaStore.Images.Thumbnails ;
+import android.provider.MediaStore.Images ;
+import android.provider.MediaStore.Audio ;
 
 // Android database support
 import android.database.Cursor ;
@@ -136,6 +139,7 @@ private int m_full_picture_id ;
 /// We use the following helper objects to playback and record audio tags
 /// for the displayed image.
 private AudioRecorder m_audio_recorder ;
+private MediaPlayer   m_audio_player ;
 
 //-------------------------- INITIALIZATION -----------------------------
 
@@ -194,40 +198,66 @@ private AudioRecorder m_audio_recorder ;
 // Play back the audio tag (if any) associated with the displayed image
 private void play_audio_tag()
 {
-   Utils.notify(this, "Playing back audio tag...") ;
+   try
+   {
+      long audio_id = audio_tag_id(m_full_picture_id) ;
+      if (audio_id == -1) {
+         Utils.alert(this, getString(R.string.no_audio_tag_msg)) ;
+         return ;
+      }
+
+      m_audio_player = new MediaPlayer() ;
+      m_audio_player.setDataSource(this, ContentUris.withAppendedId(
+         Audio.Media.INTERNAL_CONTENT_URI, audio_id)) ;
+      m_audio_player.prepare() ;
+      m_audio_player.start() ;
+
+      Utils.notify_long(this, getString(R.string.play_audio_msg)) ;
+   }
+   catch (IOException e)
+   {
+      Log.e(null, "MVN: unable to play back audio tag", e) ;
+      m_audio_player = null ;
+      Utils.alert(this, getString(R.string.audio_player_init_error_msg)) ;
+   }
 }
 
 // Record an audio tag for the displayed image
 private void record_audio_tag()
 {
-   Utils.notify_long(this, getString(R.string.record_audio_msg)) ;
-
    try
    {
       m_audio_recorder = new AudioRecorder(this) ;
       m_audio_recorder.start() ;
+      Utils.notify_long(this, getString(R.string.record_audio_msg)) ;
    }
    catch (Exception e)
    {
       Log.e(null, "MVN: unable to create AudioRecorder", e) ;
+      m_audio_recorder = null ;
       Utils.alert(this, getString(R.string.audio_recorder_init_error_msg)) ;
    }
 }
 
-// Stop an audio recording currently in progress and connect it to the
-// currently displayed image.
+// Graceful shutdown (hopefully) of audio playback or recording
 private void wind_up_audio()
 {
-   if (m_audio_recorder == null) // no audio recording in progress
-      return ;
+   if (m_audio_recorder != null)
+      wind_up_audio_recording() ;
+   else if (m_audio_player != null)
+      wind_up_audio_playback() ;
+}
 
+// Stop an audio recording currently in progress and connect it to the
+// currently displayed image.
+private void wind_up_audio_recording()
+{
    try
    {
       m_audio_recorder.stop() ;
 
       long recording_id = m_audio_recorder.get_id() ;
       if (recording_id != -1) {
-         //m_db.delete_audio(m_full_picture_id) ;
          //m_db.update_audio(m_full_picture_id, recording_id) ;
       }
    }
@@ -237,6 +267,21 @@ private void wind_up_audio()
       Utils.alert(this, getString(R.string.audio_recording_failed_msg)) ;
    }
    m_audio_recorder = null ;
+}
+
+// Stop audio tag playback for the currently displayed image
+private void wind_up_audio_playback()
+{
+   try
+   {
+      m_audio_player.stop() ;
+      m_audio_player.release() ;
+   }
+   catch (Exception e)
+   {
+      Log.e(null, "MVN: something went wrong winding up audio playback", e) ;
+   }
+   m_audio_player = null ;
 }
 
 //-------------------------- KEYBOARD EVENTS ----------------------------
@@ -277,8 +322,8 @@ private void display_picture(long picture_id)
    try
    {
       InputStream is = getContentResolver().
-         openInputStream(ContentUris.withAppendedId(Media.EXTERNAL_CONTENT_URI,
-                                                    picture_id)) ;
+         openInputStream(ContentUris.withAppendedId(
+            Images.Media.EXTERNAL_CONTENT_URI, picture_id)) ;
 
       BitmapFactory.Options options = new BitmapFactory.Options() ;
       options.inSampleSize = 4 ;
@@ -308,21 +353,28 @@ private int full_picture_id(long thumbnail_id)
    try
    {
       String[] columns = new String[] {
-         Thumbnails._ID,
-         Thumbnails.IMAGE_ID,
+         Images.Thumbnails._ID,
+         Images.Thumbnails.IMAGE_ID,
       } ;
-      String where_clause = Thumbnails._ID + "=" + thumbnail_id ;
-      Cursor C = managedQuery(Thumbnails.EXTERNAL_CONTENT_URI, columns,
-                              where_clause, null, null) ;
+      String where_clause = Images.Thumbnails._ID + "=" + thumbnail_id ;
+      Cursor C = managedQuery(Images.Thumbnails.EXTERNAL_CONTENT_URI,
+                              columns, where_clause, null, null) ;
       if (C.getCount() > 0) {
          C.moveToFirst() ;
-         return C.getInt(C.getColumnIndex(Thumbnails.IMAGE_ID)) ;
+         return C.getInt(C.getColumnIndex(Images.Thumbnails.IMAGE_ID)) ;
       }
    }
    catch (android.database.sqlite.SQLiteException e)
    {
       Log.e(null, "MVN: unable to retrieve thumbnails", e) ;
    }
+   return -1 ;
+}
+
+// Return ID of audio tag corresponding to displayed picture
+private long audio_tag_id(long picture_id)
+{
+   //return m_db.get_audio_id(picture_id) ;
    return -1 ;
 }
 

@@ -79,11 +79,20 @@
    <string name="record_audio_msg">
      Speak into microphone and press center keypad button when done
    </string>
+   <string name="play_audio_msg">
+     Press center keypad button to cancel audio tag playback
+   </string>
    <string name="audio_recorder_init_error_msg">
      Sorry, unable to create the audio recorder.
    </string>
    <string name="audio_recording_failed_msg">
      Sorry, the audio tag could not be created.
+   </string>
+   <string name="no_audio_tag_msg">
+     Sorry, this picture does not (yet) have an audio tag.
+   </string>
+   <string name="audio_player_init_error_msg">
+     Sorry, unable to create the audio player.
    </string>
 
    <string name="map_tab_label"><big>Map</big></string>
