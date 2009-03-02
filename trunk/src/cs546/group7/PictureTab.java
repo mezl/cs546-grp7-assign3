@@ -132,12 +132,16 @@ public class PictureTab extends Activity {
 /// following string is that key.
 public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
 
-/// Given the thumbnail ID, this class needs to find and display the
-/// corresponding full-sized image.
+// Given the thumbnail ID, this class needs to find and display the
+// corresponding full-sized image.
 private int m_full_picture_id ;
 
-/// We use the following helper objects to playback and record audio tags
-/// for the displayed image.
+// The photo manager application maintains audio tags for the available
+// images by mapping picture IDs to audio IDs using a custom database.
+private AudioTagsDB m_db ;
+
+// We use the following helper objects to playback and record audio tags
+// for the displayed image.
 private AudioRecorder m_audio_recorder ;
 private MediaPlayer   m_audio_player ;
 
@@ -155,6 +159,9 @@ private MediaPlayer   m_audio_player ;
    super.onCreate(saved_state) ;
    setContentView(R.layout.picture_tab) ;
 
+   m_db = new AudioTagsDB(this) ;
+   m_db.open() ;
+
    Bundle extras = getIntent().getExtras() ;
    m_full_picture_id = full_picture_id(extras.getLong(EXTRAS_THUMBNAIL_ID)) ;
 
@@ -170,6 +177,34 @@ private MediaPlayer   m_audio_player ;
 {
    getMenuInflater().inflate(R.menu.picture_tab_menu, menu) ;
    return true ;
+}
+
+//------------------------- LIFE-CYCLE EVENTS ---------------------------
+
+/// Called right before the activity is about to be stopped or killed. We
+/// should take this opportunity to save our current state.
+@Override protected void onSaveInstanceState(Bundle out_state)
+{
+   super.onSaveInstanceState(out_state) ;
+}
+
+/// Called when the activity ends. In our app, we should close the
+/// connection to the database.
+@Override protected void onPause()
+{
+   super.onPause() ;
+   m_db.close() ;
+   m_db = null ;
+}
+
+/// Called when the activity is resumed
+@Override protected void onResume()
+{
+   super.onResume() ;
+   if (m_db == null) {
+      m_db = new AudioTagsDB(this) ;
+      m_db.open() ;
+   }
 }
 
 //--------------------------- MENU COMMANDS -----------------------------
@@ -200,7 +235,7 @@ private void play_audio_tag()
 {
    try
    {
-      long audio_id = audio_tag_id(m_full_picture_id) ;
+      long audio_id = m_db.get_audio_id(m_full_picture_id) ;
       if (audio_id == -1) {
          Utils.alert(this, getString(R.string.no_audio_tag_msg)) ;
          return ;
@@ -257,9 +292,8 @@ private void wind_up_audio_recording()
       m_audio_recorder.stop() ;
 
       long recording_id = m_audio_recorder.get_id() ;
-      if (recording_id != -1) {
-         //m_db.update_audio(m_full_picture_id, recording_id) ;
-      }
+      if (recording_id != -1)
+         m_db.update(m_full_picture_id, recording_id) ;
    }
    catch (Exception e)
    {
@@ -368,13 +402,6 @@ private int full_picture_id(long thumbnail_id)
    {
       Log.e(null, "MVN: unable to retrieve thumbnails", e) ;
    }
-   return -1 ;
-}
-
-// Return ID of audio tag corresponding to displayed picture
-private long audio_tag_id(long picture_id)
-{
-   //return m_db.get_audio_id(picture_id) ;
    return -1 ;
 }
 
