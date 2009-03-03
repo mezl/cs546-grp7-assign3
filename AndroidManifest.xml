@@ -63,7 +63,8 @@
 
 <!--=========== ACTIVITIES FOR PHOTO MANAGER APPLICATION =============-->
 
-<application android:label="@string/app_name">
+<application android:label="@string/app_name"
+             android:debuggable="true">
 
 <!-- The application's main screen -->
 <activity android:name=".AssignmentThree"
