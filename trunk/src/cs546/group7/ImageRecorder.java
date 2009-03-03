@@ -119,6 +119,7 @@ private Camera m_camera ;
    setContentView(new CameraPreview(this)) ;
 }
 
+/*
 LocationManager m_location_manager ;
 Location m_location ;
 
@@ -179,6 +180,7 @@ LocationListener m_location_listener = new LocationListener() {
    if (m_location_manager != null)
       m_location_manager.removeUpdates(m_location_listener) ;
 }
+//*/
 
 //-------------------------- KEYBOARD EVENTS ----------------------------
 
@@ -282,10 +284,12 @@ public void onPictureTaken(byte[] data, Camera camera)
    // Retrieve current location and update captured image's record to
    // include these attributes.
    ///*
-   //Location gps_coords = get_gps_coordinates() ;
-   Location gps_coords = m_location ;
-   if (gps_coords == null || stale(gps_coords, today))
+   Location gps_coords = get_gps_coordinates() ;
+   //Location gps_coords = m_location ;
+   if (gps_coords == null || stale(gps_coords, today)) {
       Log.e(null, "MVN: unable to obtain GPS location fix for new image") ;
+      update(new_uri, 34.021124, -118.287553) ;
+   }
    else
       update(new_uri, gps_coords.getLatitude(), gps_coords.getLongitude()) ;
    //*/
