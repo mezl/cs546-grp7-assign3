@@ -69,6 +69,9 @@
    <string name="post_capture_query_failed_msg">
      Sorry, picture captured from the camera could not be queried
    </string>
+   <string name="no_gps_provider">
+     Sorry, unable to obtain a GPS location provider
+   </string>
    <string name="bad_gps_msg">
      Sorry, location data is either stale or unavailable
    </string>
