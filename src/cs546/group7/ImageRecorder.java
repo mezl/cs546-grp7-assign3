@@ -106,43 +106,36 @@ public class ImageRecorder extends Activity {
 // it shouldn't be surprising that we need this thing:
 private Camera m_camera ;
 
+// Once an image has been captured, we store it in the images database
+// and keep track of its URI so that we can tag it with the current GPS
+// coordinates prior to exiting the activity.
+private String m_new_uri ;
+
+// In order to tag each image with the current GPS coordinates, we need
+// the following beasties:
+private LocationListener m_location_listener ;
+private Location         m_location ;
+
 //-------------------------- INITIALIZATION -----------------------------
 
 /**
    This method is called when the activity is first created. It is akin
    to the "main" function in normal desktop applications.
 */
-@Override public void onCreate(Bundle saved_state)
+@Override protected void onCreate(Bundle saved_state)
 {
    super.onCreate(saved_state) ;
    requestWindowFeature(Window.FEATURE_NO_TITLE) ;
+   setup_location_listener() ;
    setContentView(new CameraPreview(this)) ;
 }
 
-/*
-LocationManager m_location_manager ;
-Location m_location ;
-
-LocationListener m_location_listener = new LocationListener() {
-   public void onProviderDisabled(String provider) {
-      m_location = null ;
-   }
-
-   public void onLocationChanged(Location L) {
-      m_location = L ;
-      m_location_manager.removeUpdates(m_location_listener) ;
-   } ;
-
-   public void onProviderEnabled(String provider) {}
-   public void onStatusChanged(String provider, int status, Bundle extras) {}
-} ;
-
-@Override public void onStart()
+private void setup_location_listener()
 {
    try
    {
-      m_location_manager = (LocationManager)
-         getSystemService(Context.LOCATION_SERVICE) ;
+      LocationManager M =
+         (LocationManager) getSystemService(Context.LOCATION_SERVICE) ;
 
       Criteria C = new Criteria() ;
       C.setAccuracy(Criteria.ACCURACY_FINE) ;
@@ -152,35 +145,61 @@ LocationListener m_location_listener = new LocationListener() {
       C.setCostAllowed(false) ;
       C.setPowerRequirement(Criteria.POWER_MEDIUM) ;
 
-      String location_provider = m_location_manager.getBestProvider(C, true) ;
-      if (location_provider != null) {
-         Location last_known_location =
-            m_location_manager.getLastKnownLocation(location_provider) ;
-         if (last_known_location == null) // bogus GPS
-            m_location_manager.requestLocationUpdates(location_provider,
-                                                      10000, 100,
-                                                      m_location_listener) ;
-         else { // got good last known location
-            m_location = last_known_location ;
-            m_location_manager.removeUpdates(m_location_listener) ;
-         }
+      String provider = M.getBestProvider(C, true) ;
+      if (provider == null) {
+         Log.e(null, "MVN: unable to obtain a GPS location provider") ;
+         Utils.notify(this, getString(R.string.no_gps_provider)) ;
+         return ;
       }
+      m_location_listener = new GPSListener() ;
+      M.requestLocationUpdates(provider, 60000, 100, m_location_listener) ;
+
+      Location last_known_location = M.getLastKnownLocation(provider) ;
+      if (last_known_location != null) // use it till next update
+         m_location = last_known_location ;
    }
    catch (Exception e)
    {
       Log.e(null, "MVN: location manager fiasco", e) ;
+      shutdown_location_listener() ;
+      m_location = null ;
    }
 }
 
 //----------------------------- CLEAN-UP --------------------------------
 
-@Override public void onStop()
+/// When the activity is potentially on the verge of being dismissed, we
+/// check if the location listener has produced anything useful and
+/// update the newly captured image's latitude and longitude data fields.
+@Override protected void onPause()
 {
-   super.onStop() ;
-   if (m_location_manager != null)
-      m_location_manager.removeUpdates(m_location_listener) ;
+   if (m_new_uri != null) // picture taken and successfully stored in database
+   {
+      if (m_location == null || stale(m_location, new Date()))
+         update(m_new_uri, 34.021124, -118.287553) ;
+      else
+         update(m_new_uri,
+                m_location.getLatitude(), m_location.getLongitude()) ;
+   }
+   super.onPause() ;
 }
-//*/
+
+@Override protected void onDestroy()
+{
+   shutdown_location_listener() ;
+   super.onDestroy() ;
+}
+
+private void shutdown_location_listener()
+{
+   if (m_location_listener == null) // nothing to shutdown
+      return ;
+
+   LocationManager M =
+      (LocationManager) getSystemService(Context.LOCATION_SERVICE) ;
+   M.removeUpdates(m_location_listener) ;
+   m_location_listener = null ;
+}
 
 //-------------------------- KEYBOARD EVENTS ----------------------------
 
@@ -199,7 +218,6 @@ LocationListener m_location_listener = new LocationListener() {
    if (key_code == KeyEvent.KEYCODE_DPAD_CENTER)
    {
       m_camera.takePicture(null, null, new ImageCaptureCallback(this)) ;
-      //finish() ;
       return true ;
    }
    if (key_code == KeyEvent.KEYCODE_BACK)
@@ -272,27 +290,14 @@ public void onPictureTaken(byte[] data, Camera camera)
 
    // Stuff the raw camera data into a bitmap image object and store it
    // to the MediaStore.Images database.
-   Bitmap image   = BitmapFactory.decodeByteArray(data, 0, data.length) ;
-   String new_uri = Media.insertImage(getContentResolver(), image,
-                                      title(today), description(today)) ;
-   if (new_uri == null) {
+   Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length) ;
+   m_new_uri = Media.insertImage(getContentResolver(), image,
+                                 title(today), description(today)) ;
+   if (m_new_uri == null) {
       Utils.alert(m_context, m_context.getString(R.string.capture_failed_msg));
       return ;
    }
-   update(new_uri, today.getTime()) ;
-
-   // Retrieve current location and update captured image's record to
-   // include these attributes.
-   ///*
-   Location gps_coords = get_gps_coordinates() ;
-   //Location gps_coords = m_location ;
-   if (gps_coords == null || stale(gps_coords, today)) {
-      Log.e(null, "MVN: unable to obtain GPS location fix for new image") ;
-      update(new_uri, 34.021124, -118.287553) ;
-   }
-   else
-      update(new_uri, gps_coords.getLatitude(), gps_coords.getLongitude()) ;
-   //*/
+   update(m_new_uri, today.getTime()) ;
 }
 
 // Returns a suitable title for the newly captured image
@@ -309,43 +314,34 @@ private String description(Date d)
         + new SimpleDateFormat(" EEEE, MMMM dd, yyyy 'at' hh:mmaa").format(d) ;
 }
 
-// Retrieves the current or last known location
-private Location get_gps_coordinates()
-{
-   try
-   {
-      LocationManager M = (LocationManager)
-         m_context.getSystemService(Context.LOCATION_SERVICE) ;
-
-      Criteria C = new Criteria() ;
-      C.setAccuracy(Criteria.ACCURACY_COARSE) ;
-      C.setAltitudeRequired(false) ;
-      C.setBearingRequired(false) ;
-      C.setSpeedRequired(false) ;
-      C.setCostAllowed(false) ;
-      C.setPowerRequirement(Criteria.POWER_MEDIUM) ;
-
-      return M.getLastKnownLocation(M.getBestProvider(C, false)) ;
-   }
-   catch (Exception e)
-   {
-      return null ;
-   }
-}
-
-// Returns true if the last known location is much older than the current
-// time.
-private boolean stale(Location last_known_location, Date now)
-{
-   return (now.getTime() - last_known_location.getTime()) > 300000 ; // 5 mins
-}
-
 // Time-stamps the image captured by the camera
 private void update(String uri, long date_taken)
 {
    ContentValues cv = new ContentValues(1) ;
    cv.put(Media.DATE_TAKEN, date_taken) ;
    getContentResolver().update(Uri.parse(uri), cv, null, null) ;
+}
+
+} // end of inner class ImageRecorder.ImageCaptureCallback
+
+//---------------------------- GPS HELPERS ------------------------------
+
+// This inner class implements a listener that responds to GPS events
+private class GPSListener implements LocationListener {
+   public void onProviderEnabled(String provider) {}
+   public void onProviderDisabled(String provider){}
+   public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+   public void onLocationChanged(Location L) {
+      m_location = L ;
+   }
+} // end of inner class ImageRecorder.GPSListener
+
+// Returns true if the last known location is much older than the current
+// time.
+private boolean stale(Location last_known_location, Date now)
+{
+   return (now.getTime() - last_known_location.getTime()) > 300000 ; // 5 mins
 }
 
 // Adds GPS location data to the image captured by the camera
@@ -356,8 +352,6 @@ private void update(String uri, double latitude, double longitude)
    cv.put(Media.LONGITUDE, longitude) ;
    getContentResolver().update(Uri.parse(uri), cv, null, null) ;
 }
-
-} // end of class inner ImageRecorder.ImageCaptureCallback
 
 //-----------------------------------------------------------------------
 
