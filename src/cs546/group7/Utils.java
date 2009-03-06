@@ -83,6 +83,10 @@ import java.io.FileInputStream ;
 import java.io.InputStream ;
 import java.io.OutputStream ;
 import java.io.File ;
+import java.io.FilenameFilter ;
+
+// Java utilities
+import java.util.regex.* ;
 
 //------------------------- CLASS DEFINITION ----------------------------
 
@@ -286,6 +290,23 @@ public final static boolean exists(String file_name)
 public final static void unlink(String file_name)
 {
    new File(file_name).delete() ;
+}
+
+/// Remove all files matching specified pattern
+public final static void unlink_all(final String glob)
+{
+   final int last_sep = glob.lastIndexOf(File.separatorChar) ;
+
+   File dir = new File(glob.substring(0, last_sep)) ;
+   String[] list = dir.list(new FilenameFilter() {
+         private Pattern regex = Pattern.compile(glob.substring(last_sep + 1));
+         public  boolean accept(File dir, String file_name) {
+            return regex.matcher(new File(file_name).getName()).matches() ;
+         }
+      }) ;
+
+   for (int i = 0; i < list.length; ++i)
+      unlink(list[i]) ;
 }
 
 /// Copy the named file byte-by-byte to the supplied output stream

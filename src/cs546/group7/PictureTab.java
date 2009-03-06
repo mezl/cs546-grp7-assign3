@@ -171,13 +171,6 @@ private MediaPlayer   m_audio_player ;
 
 //------------------------- LIFE-CYCLE EVENTS ---------------------------
 
-/// Called right before the activity is about to be stopped or killed. We
-/// should take this opportunity to save our current state.
-@Override protected void onSaveInstanceState(Bundle out_state)
-{
-   super.onSaveInstanceState(out_state) ;
-}
-
 /// Called when the activity ends. In our app, we should close the
 /// connection to the database.
 @Override protected void onPause()

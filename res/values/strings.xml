@@ -57,8 +57,13 @@
 
 <resources>
    <string name="app_name">Grp 7 Assign. III</string>
+   <string name="group_name">cs546.group7</string>
 
-   <string name="add_picture_menu_item">Add a picture</string>
+   <string name="select_thumbnail_msg">Please select a thumbnail first</string>
+
+   <string name="add_picture_menu_item">Add picture</string>
+   <string name="remove_picture_menu_item">Remove picture</string>
+   <string name="remove_all_menu_item">Remove all</string>
 
    <string name="preview_latitude_label">Latitude:</string>
    <string name="preview_longitude_label">Longitude:</string>
@@ -114,6 +119,4 @@
    </string>
 
    <string name="alert_okay_label">OK</string>
-
-   <string name="group_name">cs546.group7</string>
 </resources>
