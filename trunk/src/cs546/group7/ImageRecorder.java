@@ -194,7 +194,11 @@ private void setup_accept_reject_buttons()
          if (m_new_uri == null) // picture not yet taken
             Utils.notify(context, getString(R.string.take_picture_msg)) ;
          else // picture taken and okayed by user ==> return to main screen
+         {
+            long id = Utils.get_thumbnail_id((Activity) context, m_new_uri) ;
+            Utils.display_picture(context, id) ;
             finish() ;
+         }
       }}) ;
 
    B = (Button) findViewById(R.id.preview_reject_btn) ;

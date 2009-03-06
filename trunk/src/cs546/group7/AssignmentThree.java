@@ -117,12 +117,14 @@ private GridView m_thumbnails_grid ;
    super.onCreate(saved_state) ;
    setContentView(R.layout.main) ;
 
+   final Context context = this ;
+
    // Setup the thumbnails grid
    m_thumbnails_grid = (GridView) findViewById(R.id.thumbnails_grid) ;
    m_thumbnails_grid.setOnItemClickListener(
       new AdapterView.OnItemClickListener() {
          public void onItemClick(AdapterView A, View V, int pos, long id) {
-            display_picture(id) ;
+            Utils.display_picture(context, id) ;
          }}) ;
 
    // Display the thumbnails of all available images
@@ -158,18 +160,6 @@ private GridView m_thumbnails_grid ;
          return true ;
    }
    return super.onOptionsItemSelected(item) ;
-}
-
-//--------------------------- PHOTO DISPLAY -----------------------------
-
-// Start the activity that displays the selected picture and allows users
-// to play back any associated audio message and place the picture on a
-// map.
-private void display_picture(long id)
-{
-   Intent I = new Intent(this, DisplayScreen.class) ;
-   I.putExtra(Utils.EXTRAS_THUMBNAIL_ID, id) ;
-   startActivity(I) ;
 }
 
 //--------------------------- PHOTO CAPTURE -----------------------------
