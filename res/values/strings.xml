@@ -63,7 +63,12 @@
    <string name="preview_latitude_label">Latitude:</string>
    <string name="preview_longitude_label">Longitude:</string>
    <string name="preview_gps_unknown">(?)</string>
-   <string name="preview_snap_msg">Press the center DPAD button/trackball (below the Menu button) to snap a new picture.</string>
+   <string name="preview_snap_msg">Press trackball to snap new picture</string>
+   <string name="accept_picture_menu_item">Yes, this picture is okay</string>
+   <string name="reject_picture_menu_item">No, I want to try again</string>
+   <string name="take_picture_msg">Please snap a picture first!</string>
+   <string name="preview_accept_btn_label">Pic. OK</string>
+   <string name="preview_reject_btn_label">Try again</string>
 
    <string name="capture_msg">
      Captured from camera by cs546.group7.AssignmentThree on

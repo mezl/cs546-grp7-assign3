@@ -74,7 +74,7 @@
 
       <TextView android:id="@+id/preview_latitude"
                 android:gravity="center"
-                android:layout_weight="2"/>
+                android:layout_weight="1"/>
    </TableRow>
 
    <TableRow>
@@ -95,12 +95,33 @@
              android:layout_weight="1"/>
 
 <!-- Finally, at the bottom, a small message indicating what the user -->
-<!-- needs to do in order to snap a picture.                          -->
-<TextView android:text="@string/preview_snap_msg"
-          android:gravity="center"
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
-          android:layout_alignParentBottom="true"/>
+<!-- needs to do in order to snap a picture and buttons for accepting -->
+<!-- or rejecting the snapped picture.                                -->
+<LinearLayout android:orientation="horizontal"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:layout_alignParentBottom="true">
+
+   <!-- Button for accepting the snapped pictures -->
+   <Button android:id="@+id/preview_accept_btn"
+           android:text="@string/preview_accept_btn_label"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"/>
+
+   <!-- Some help text indicating how the picture should be snapped -->
+   <TextView android:text="@string/preview_snap_msg"
+             android:gravity="center"
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:layout_weight="1"/>
+
+   <!-- Button for rejecting the snapped picture and trying again -->
+   <Button android:id="@+id/preview_reject_btn"
+           android:text="@string/preview_reject_btn_label"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"/>
+
+</LinearLayout>
 
 <!-- End of top-level layout element for this screen -->
 </LinearLayout>
