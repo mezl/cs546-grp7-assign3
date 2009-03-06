@@ -11,10 +11,9 @@
 <!--                                                                  -->
 <!--##################################################################-->
 <!--                                                                  -->
-<!-- This file specifies various string resources used by the photo   -->
-<!-- manager application for the Android/gPhone platform that tags    -->
-<!-- new pictures taken with the camera with the current GPS coordi-  -->
-<!-- nates and optional audio.                                        -->
+<!-- This file specifies the user interface for the preview screen of -->
+<!-- a photo manager application that tags new pictures taken on the  -->
+<!-- gPhone with the current GPS coordinates and optional audio.      -->
 <!--                                                                  -->
 <!--##################################################################-->
 
@@ -55,60 +54,53 @@
 -->
 <!--##################################################################-->
 
-<resources>
-   <string name="app_name">Grp 7 Assign. III</string>
+<!-- We show the current GPS coordinates (if available) along with    -->
+<!-- whatever the camera is currently picking up. To put these two    -->
+<!-- things together, we use an top-level linear layout.              -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent">
 
-   <string name="add_picture_menu_item">Add a picture</string>
+<!-- We arrange the GPS coordinates in two rows along the top of the  -->
+<!-- preview page. The neatest of doing this is inside a table.       -->
+<TableLayout android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:layout_alignParentTop="true">
+   <TableRow>
+      <TextView android:text="@string/preview_latitude_label"
+                android:gravity="right"
+                android:singleLine="true"/>
 
-   <string name="preview_latitude_label">Latitude:</string>
-   <string name="preview_longitude_label">Longitude:</string>
-   <string name="preview_gps_unknown">(?)</string>
-   <string name="preview_snap_msg">Press the center DPAD button/trackball (below the Menu button) to snap a new picture.</string>
+      <TextView android:id="@+id/preview_latitude"
+                android:gravity="center"
+                android:layout_weight="2"/>
+   </TableRow>
 
-   <string name="capture_msg">
-     Captured from camera by cs546.group7.AssignmentThree on
-   </string>
-   <string name="capture_failed_msg">
-     Sorry, unable to capture a picture from the camera
-   </string>
-   <string name="post_capture_query_failed_msg">
-     Sorry, picture captured from the camera could not be queried
-   </string>
-   <string name="no_gps_provider">
-     Sorry, unable to obtain a GPS location provider
-   </string>
-   <string name="bad_gps_msg">
-     Sorry, location data is either stale or unavailable
-   </string>
+   <TableRow>
+      <TextView android:text="@string/preview_longitude_label"
+                android:gravity="right"
+                android:singleLine="true"/>
 
-   <string name="picture_tab_label"><big>Picture</big></string>
-   <string name="play_audio_tag_menu_item">Play Audio Tag</string>
-   <string name="record_audio_tag_menu_item">Record Audio Tag</string>
-   <string name="record_audio_msg">
-     Speak into microphone and press center keypad button when done
-   </string>
-   <string name="play_audio_msg">
-     Press center keypad button to cancel audio tag playback
-   </string>
-   <string name="audio_recorder_init_error_msg">
-     Sorry, unable to create the audio recorder.
-   </string>
-   <string name="audio_recording_failed_msg">
-     Sorry, the audio tag could not be created.
-   </string>
-   <string name="no_audio_tag_msg">
-     Sorry, this picture does not (yet) have an audio tag.
-   </string>
-   <string name="audio_player_init_error_msg">
-     Sorry, unable to create the audio player.
-   </string>
+      <TextView android:id="@+id/preview_longitude"
+                android:gravity="center"
+                android:layout_weight="1"/>
+   </TableRow>
+</TableLayout>
 
-   <string name="map_tab_label"><big>Map</big></string>
-   <string name="map_empty_msg">
-     <big>Sorry, the selected picture does not have any associated location data.</big>
-   </string>
+<!-- Below the GPS coordinates row, we show the camera preview -->
+<SurfaceView android:id="@+id/surface_view"
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:layout_weight="1"/>
 
-   <string name="alert_okay_label">OK</string>
+<!-- Finally, at the bottom, a small message indicating what the user -->
+<!-- needs to do in order to snap a picture.                          -->
+<TextView android:text="@string/preview_snap_msg"
+          android:gravity="center"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_alignParentBottom="true"/>
 
-   <string name="group_name">cs546.group7</string>
-</resources>
+<!-- End of top-level layout element for this screen -->
+</LinearLayout>

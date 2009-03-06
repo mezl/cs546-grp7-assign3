@@ -64,6 +64,8 @@ import android.location.* ;
 import android.hardware.Camera ;
 
 // Android UI support
+import android.widget.TextView ;
+
 import android.view.SurfaceView ;
 import android.view.SurfaceHolder ;
 import android.view.Window ;
@@ -83,6 +85,7 @@ import android.net.Uri ;
 
 // Android application and OS support
 import android.app.Activity ;
+import android.content.pm.ActivityInfo ;
 import android.content.Context ;
 import android.os.Bundle ;
 
@@ -90,6 +93,7 @@ import android.os.Bundle ;
 import android.util.Log ;
 
 // Java utilities
+import java.text.DecimalFormat ;
 import java.text.SimpleDateFormat ;
 import java.util.Date ;
 
@@ -125,9 +129,22 @@ private Location         m_location ;
 @Override protected void onCreate(Bundle saved_state)
 {
    super.onCreate(saved_state) ;
+
    requestWindowFeature(Window.FEATURE_NO_TITLE) ;
+   setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) ;
+   setContentView(R.layout.preview_screen) ;
+
+   setup_camera_preview() ;
    setup_location_listener() ;
-   setContentView(new CameraPreview(this)) ;
+   show_location(m_location) ;
+}
+
+private void setup_camera_preview()
+{
+   SurfaceView   V = (SurfaceView) findViewById(R.id.surface_view) ;
+   SurfaceHolder H = V.getHolder() ;
+   H.addCallback(new PreviewHolderCallback()) ;
+   H.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS) ;
 }
 
 private void setup_location_listener()
@@ -153,10 +170,6 @@ private void setup_location_listener()
       }
       m_location_listener = new GPSListener() ;
       M.requestLocationUpdates(provider, 60000, 100, m_location_listener) ;
-
-      Location last_known_location = M.getLastKnownLocation(provider) ;
-      if (last_known_location != null) // use it till next update
-         m_location = last_known_location ;
    }
    catch (Exception e)
    {
@@ -176,7 +189,8 @@ private void setup_location_listener()
    if (m_new_uri != null) // picture taken and successfully stored in database
    {
       if (m_location == null || stale(m_location, new Date()))
-         update(m_new_uri, 34.021124, -118.287553) ;
+         //update(m_new_uri, 34.021124, -118.287553) ;
+         ; // don't show incorrect coordinates
       else
          update(m_new_uri,
                 m_location.getLatitude(), m_location.getLongitude()) ;
@@ -231,20 +245,10 @@ private void shutdown_location_listener()
 //-------------------------- CAMERA PREVIEW -----------------------------
 
 /**
-   This inner class implements the camera preview. It is pretty much
-   lifted verbatim from the Android CameraPreview sample.
+   This inner class implements a surface holder callback that initiates
+   and shuts down the camera preview.
 */
-private class CameraPreview extends SurfaceView
-                            implements SurfaceHolder.Callback {
-   private SurfaceHolder m_holder ;
-
-   public CameraPreview(Context C) {
-      super(C) ;
-      m_holder = getHolder() ;
-      m_holder.addCallback(this) ;
-      m_holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS) ;
-   }
-
+private class PreviewHolderCallback implements SurfaceHolder.Callback {
    public void surfaceCreated(SurfaceHolder H) {
       m_camera = Camera.open() ;
       m_camera.setPreviewDisplay(H) ;
@@ -262,7 +266,7 @@ private class CameraPreview extends SurfaceView
       m_camera.release() ;
       m_camera = null ;
    }
-} // end of inner class ImageRecorder.CameraPreview
+} // end of inner class ImageRecorder.PreviewSurfaceHolder
 
 //---------------------- IMAGE CAPTURE CALLBACK -------------------------
 
@@ -334,6 +338,7 @@ private class GPSListener implements LocationListener {
 
    public void onLocationChanged(Location L) {
       m_location = L ;
+      show_location(L) ;
    }
 } // end of inner class ImageRecorder.GPSListener
 
@@ -342,6 +347,25 @@ private class GPSListener implements LocationListener {
 private boolean stale(Location last_known_location, Date now)
 {
    return (now.getTime() - last_known_location.getTime()) > 300000 ; // 5 mins
+}
+
+// Show the specified GPS coordinates on the UI
+private void show_location(Location L)
+{
+   TextView lat = (TextView) findViewById(R.id.preview_latitude) ;
+   TextView lon = (TextView) findViewById(R.id.preview_longitude) ;
+   if (L == null)
+   {
+      String unknown = getString(R.string.preview_gps_unknown) ;
+      lat.setText(unknown) ;
+      lon.setText(unknown) ;
+   }
+   else
+   {
+      DecimalFormat format = new DecimalFormat("###.###") ;
+      lat.setText(format.format(L.getLatitude())) ;
+      lon.setText(format.format(L.getLongitude())) ;
+   }
 }
 
 // Adds GPS location data to the image captured by the camera
