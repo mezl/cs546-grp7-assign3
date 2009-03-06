@@ -139,6 +139,35 @@ public final static int full_picture_id(Activity A, long thumbnail_id)
    return -1 ;
 }
 
+/// Return the thumbnail ID of the specified picture given its string URI
+public final static long get_thumbnail_id(Activity A, String uri)
+{
+   return get_thumbnail_id(A, ContentUris.parseId(Uri.parse(uri))) ;
+}
+
+/// Return the thumbnail ID of the specified picture given its ID
+public final static long get_thumbnail_id(Activity A, long image_id)
+{
+   try
+   {
+      String[] columns = new String[] {
+         Images.Thumbnails._ID,
+      } ;
+      String where_clause = Images.Thumbnails.IMAGE_ID + "=" + image_id ;
+      Cursor C = A.managedQuery(Images.Thumbnails.EXTERNAL_CONTENT_URI,
+                                columns, where_clause, null, null) ;
+      if (C.getCount() > 0) {
+         C.moveToFirst() ;
+         return C.getInt(C.getColumnIndex(Images.Thumbnails._ID)) ;
+      }
+   }
+   catch (Exception e)
+   {
+      Log.e(null, "MVN: unable to get thumbnail for image " + image_id, e) ;
+   }
+   return -1 ;
+}
+
 /// Return the GPS coordinates corresponding to the specified image
 public final static LatLong gps_coords(Activity A, int image_id)
 {
@@ -177,6 +206,17 @@ public final static void delete_picture(Activity A, String uri)
 /// Delete a picture and its thumbnails given its ID
 public final static void delete_picture(Activity A, long id)
 {
+}
+
+/// Start the activity that displays the selected picture and allows
+/// users to play back any associated audio message and place the picture
+/// on a map. The DisplayScreen activity expects to know the thumbnail ID
+/// of the picture to be displayed.
+public final static void display_picture(Context C, long thumbnail_id)
+{
+   Intent I = new Intent(C, DisplayScreen.class) ;
+   I.putExtra(EXTRAS_THUMBNAIL_ID, thumbnail_id) ;
+   C.startActivity(I) ;
 }
 
 //-------------------------- AUDIO UTILITIES ----------------------------
