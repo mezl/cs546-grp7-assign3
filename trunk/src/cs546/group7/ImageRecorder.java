@@ -193,7 +193,7 @@ private void setup_accept_reject_buttons()
       public void onClick(View V) {
          if (m_new_uri == null) // picture not yet taken
             Utils.notify(context, getString(R.string.take_picture_msg)) ;
-         else // picture taken and okayed by user ==> return to main screen
+         else // picture taken and okayed by user ==> go to display screen
          {
             long id = Utils.get_thumbnail_id((Activity) context, m_new_uri) ;
             Utils.display_picture(context, id) ;

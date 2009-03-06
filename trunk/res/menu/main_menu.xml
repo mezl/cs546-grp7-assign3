@@ -56,6 +56,14 @@
 
 <!-- The photo manager's main menu -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
    <item android:id="@+id/add_picture"
          android:title="@string/add_picture_menu_item"/>
+
+   <item android:id="@+id/remove_picture"
+         android:title="@string/remove_picture_menu_item"/>
+
+   <item android:id="@+id/remove_all"
+         android:title="@string/remove_all_menu_item"/>
+
 </menu>

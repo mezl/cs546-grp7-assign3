@@ -194,7 +194,7 @@ public void update(long image_id, long new_audio_id)
    {
       c.moveToFirst() ;
 
-      delete_audio(c.getLong(c.getColumnIndex(AUDIO_ID))) ;
+      delete_audio_from_system(c.getLong(c.getColumnIndex(AUDIO_ID))) ;
 
       ContentValues v = new ContentValues(2) ;
       v.put(IMAGE_ID, image_id) ;
@@ -206,11 +206,22 @@ public void update(long image_id, long new_audio_id)
 
 /// Delete the specified audio tag from MediaStore.Audio.Media. But
 /// before doing that, get the name of the audio file and delete it.
-public void delete_audio(long audio_id)
+private void delete_audio_from_system(long audio_id)
 {
    Utils.unlink(Utils.get_audio_file_name((Activity) m_context, audio_id)) ;
    m_context.getContentResolver().delete(ContentUris.withAppendedId(
       Audio.Media.INTERNAL_CONTENT_URI, audio_id), null, null) ;
+}
+
+/// Removes the specified audio ID and its corresponding image ID from
+/// the image-audio mappings database maintained by our photo manager
+/// application.
+public void delete_audio(long audio_id)
+{
+   if (audio_id <= 0) // invalid ID
+      return ;
+   delete_audio_from_system(audio_id) ;
+   m_db.delete(AUDIO_TAGS_TABLE, AUDIO_ID + "=" + audio_id, null) ;
 }
 
 //------------------------- DATABASE CLEAN-UP ---------------------------

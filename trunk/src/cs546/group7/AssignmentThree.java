@@ -75,7 +75,9 @@ import android.view.MenuItem ;
 import android.view.View ;
 
 // Android content-provider support
-import android.provider.MediaStore.Images.Thumbnails ;
+import android.provider.MediaStore.Audio ;
+import android.provider.MediaStore.Images ;
+import android.content.ContentResolver ;
 
 // Android database support
 import android.database.Cursor ;
@@ -88,7 +90,11 @@ import android.os.Bundle ;
 
 // Android utilities
 import android.content.ContentUris ;
+import android.net.Uri ;
 import android.util.Log ;
+
+// Java I/O support
+import java.io.File ;
 
 //--------------------- APPLICATION'S MAIN SCREEN -----------------------
 
@@ -106,6 +112,10 @@ public class AssignmentThree extends Activity {
 // all the available images in a neat grid.
 private GridView m_thumbnails_grid ;
 
+// The photo manager application maintains audio tags for the available
+// images by mapping picture IDs to audio IDs using a custom database.
+private AudioTagsDB m_db ;
+
 //-------------------------- INITIALIZATION -----------------------------
 
 /**
@@ -116,6 +126,9 @@ private GridView m_thumbnails_grid ;
 {
    super.onCreate(saved_state) ;
    setContentView(R.layout.main) ;
+
+   m_db = new AudioTagsDB(this) ;
+   m_db.open() ;
 
    final Context context = this ;
 
@@ -142,6 +155,27 @@ private GridView m_thumbnails_grid ;
    return true ;
 }
 
+//------------------------- LIFE-CYCLE EVENTS ---------------------------
+
+/// Called when the activity ends. In our app, we should close the
+/// connection to the database.
+@Override protected void onPause()
+{
+   m_db.close() ;
+   m_db = null ;
+   super.onPause() ;
+}
+
+/// Called when the activity is resumed
+@Override protected void onResume()
+{
+   super.onResume() ;
+   if (m_db == null) {
+      m_db = new AudioTagsDB(this) ;
+      m_db.open() ;
+   }
+}
+
 //--------------------------- MENU COMMANDS -----------------------------
 
 /**
@@ -158,11 +192,17 @@ private GridView m_thumbnails_grid ;
       case R.id.add_picture:
          capture_image() ;
          return true ;
+
+      case R.id.remove_picture:
+         remove_image(m_thumbnails_grid.getSelectedItemId()) ;
+         return true ;
+
+      case R.id.remove_all:
+         remove_all() ;
+         return true ;
    }
    return super.onOptionsItemSelected(item) ;
 }
-
-//--------------------------- PHOTO CAPTURE -----------------------------
 
 // Use the on-board camera to get a new image and store it in the
 // database along with the current GPS coordinates. This is handled by a
@@ -172,12 +212,49 @@ private void capture_image()
    startActivity(new Intent(this, ImageRecorder.class)) ;
 }
 
+// Remove the image corresponding to the selected thumbnail
+private void remove_image(long thumbnail_id)
+{
+   if (thumbnail_id == m_thumbnails_grid.INVALID_ROW_ID) {
+      Utils.notify(this, getString(R.string.select_thumbnail_msg)) ;
+      return ;
+   }
+
+   long image_id  = Utils.full_picture_id(this, thumbnail_id) ;
+   Uri  image_uri = ContentUris.withAppendedId(
+                       Images.Media.EXTERNAL_CONTENT_URI, image_id) ;
+   m_db.delete_audio(m_db.get_audio_id(image_id)) ;
+   getContentResolver().delete(image_uri, null, null) ;
+   display_thumbnails(m_thumbnails_grid) ;
+}
+
+// Remove all the images acquired by this application
+private void remove_all()
+{
+   /*
+   String group_name = getString(R.string.group_name) ;
+   String audio_file_name_pattern =
+      getFilesDir().getPath() + File.separator + group_name + ".*\\.3gp$" ;
+   Utils.unlink_all(audio_file_name_pattern) ;
+   m_db.clear() ;
+
+   ContentResolver R = getContentResolver() ;
+   String where_clause = Audio.Media.TITLE + " LIKE '%" + group_name + "%'" ;
+   R.delete(Audio.Media.INTERNAL_CONTENT_URI, where_clause, null) ;
+
+   where_clause = Images.Media.TITLE + " LIKE '%" + group_name + "%'" ;
+   R.delete(Images.Media.EXTERNAL_CONTENT_URI, where_clause, null) ;
+
+   display_thumbnails(m_thumbnails_grid) ;
+   //*/
+}
+
 //------------------------- IMAGE THUMBNAILS ----------------------------
 
 // Display the available thumbnails in the specified grid view
 private void display_thumbnails(GridView G)
 {
-   String[] from = new String[] {Thumbnails._ID} ;
+   String[] from = new String[] {Images.Thumbnails._ID} ;
    int[]    to   = new int[]    {R.id.thumbnail} ;
    G.setAdapter(new ThumbnailsAdapter(this, R.layout.thumbnail,
                                       get_thumbnails(), from, to)) ;
@@ -189,10 +266,11 @@ private Cursor get_thumbnails()
    try
    {
       String[] columns = new String[] {
-         Thumbnails._ID,
+         Images.Thumbnails._ID,
       } ;
-      String where_clause = Thumbnails.KIND + "=" + Thumbnails.MINI_KIND ;
-      return managedQuery(Thumbnails.EXTERNAL_CONTENT_URI, columns,
+      String where_clause =
+         Images.Thumbnails.KIND + "=" + Images.Thumbnails.MINI_KIND ;
+      return managedQuery(Images.Thumbnails.EXTERNAL_CONTENT_URI, columns,
                           where_clause, null, null) ;
    }
    catch (android.database.sqlite.SQLiteException e)
@@ -237,11 +315,11 @@ private class ViewBinder implements SimpleCursorAdapter.ViewBinder {
 /// obtain its contents through that URI.
 public boolean setViewValue(View V, Cursor C, int column)
 {
-   int i = C.getColumnIndex(Thumbnails._ID) ;
+   int i = C.getColumnIndex(Images.Thumbnails._ID) ;
    if (column == i) {
       ImageView img = (ImageView) V ;
       img.setImageURI(ContentUris.withAppendedId(
-         Thumbnails.EXTERNAL_CONTENT_URI, C.getInt(i))) ;
+         Images.Thumbnails.EXTERNAL_CONTENT_URI, C.getInt(i))) ;
       return true ;
    }
    return false ;
