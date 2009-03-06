@@ -75,6 +75,7 @@ import android.content.Context ;
 import android.content.Intent ;
 
 // Android utilities
+import android.content.ContentUris ;
 import android.util.Log ;
 
 // Java I/O support
@@ -165,6 +166,17 @@ public final static LatLong gps_coords(Activity A, int image_id)
       Log.e(null, "MVN: unable to retrieve image ID " + image_id, e) ;
    }
    return null ;
+}
+
+/// Delete a picture and its thumbnails given its URI in string form
+public final static void delete_picture(Activity A, String uri)
+{
+   A.getContentResolver().delete(Uri.parse(uri), null, null) ;
+}
+
+/// Delete a picture and its thumbnails given its ID
+public final static void delete_picture(Activity A, long id)
+{
 }
 
 //-------------------------- AUDIO UTILITIES ----------------------------

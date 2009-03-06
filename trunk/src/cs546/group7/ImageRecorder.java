@@ -64,12 +64,16 @@ import android.location.* ;
 import android.hardware.Camera ;
 
 // Android UI support
+import android.widget.Button ;
 import android.widget.TextView ;
 
 import android.view.SurfaceView ;
 import android.view.SurfaceHolder ;
+import android.view.View ;
 import android.view.Window ;
 
+import android.view.Menu ;
+import android.view.MenuItem ;
 import android.view.KeyEvent ;
 
 // Android graphics support
@@ -137,6 +141,7 @@ private Location         m_location ;
    setup_camera_preview() ;
    setup_location_listener() ;
    show_location(m_location) ;
+   setup_accept_reject_buttons() ;
 }
 
 private void setup_camera_preview()
@@ -177,6 +182,33 @@ private void setup_location_listener()
       shutdown_location_listener() ;
       m_location = null ;
    }
+}
+
+private void setup_accept_reject_buttons()
+{
+   final Context context = this ;
+
+   Button B = (Button) findViewById(R.id.preview_accept_btn) ;
+   B.setOnClickListener(new View.OnClickListener() {
+      public void onClick(View V) {
+         if (m_new_uri == null) // picture not yet taken
+            Utils.notify(context, getString(R.string.take_picture_msg)) ;
+         else // picture taken and okayed by user ==> return to main screen
+            finish() ;
+      }}) ;
+
+   B = (Button) findViewById(R.id.preview_reject_btn) ;
+   B.setOnClickListener(new View.OnClickListener() {
+      public void onClick(View V) {
+         if (m_new_uri == null) // picture not yet taken
+            Utils.notify(context, getString(R.string.take_picture_msg)) ;
+         else // picture taken but rejected by user ==> delete and start over
+         {
+            reject_picture() ;
+            m_camera.stopPreview() ;
+            m_camera.startPreview() ;
+         }
+      }}) ;
 }
 
 //----------------------------- CLEAN-UP --------------------------------
@@ -236,6 +268,7 @@ private void shutdown_location_listener()
    }
    if (key_code == KeyEvent.KEYCODE_BACK)
    {
+      reject_picture() ;
       finish() ;
       return true ;
    }
@@ -267,6 +300,16 @@ private class PreviewHolderCallback implements SurfaceHolder.Callback {
       m_camera = null ;
    }
 } // end of inner class ImageRecorder.PreviewSurfaceHolder
+
+// Delete the picture snapped by the user from the database (presumably,
+// this is because the user wants to try again).
+private void reject_picture()
+{
+   if (m_new_uri == null) // no picture taken yet
+      return ;
+   Utils.delete_picture(this, m_new_uri) ;
+   m_new_uri = null ;
+}
 
 //---------------------- IMAGE CAPTURE CALLBACK -------------------------
 
