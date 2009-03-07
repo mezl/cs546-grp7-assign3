@@ -69,8 +69,6 @@ import android.view.SurfaceHolder ;
 import android.view.View ;
 import android.view.Window ;
 
-import android.view.Menu ;
-import android.view.MenuItem ;
 import android.view.KeyEvent ;
 
 // Android graphics support
@@ -202,12 +200,6 @@ private void setup_accept_reject_buttons()
    }
    m_gps.use_ui(null, null) ;
    super.onPause() ;
-}
-
-@Override protected void onDestroy()
-{
-   m_gps.shutdown_listener() ;
-   super.onDestroy() ;
 }
 
 // Adds GPS location data to the image captured by the camera
