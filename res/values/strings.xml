@@ -61,9 +61,10 @@
 
    <string name="select_thumbnail_msg">Please select a thumbnail first</string>
 
-   <string name="add_picture_menu_item">Add picture</string>
-   <string name="remove_picture_menu_item">Remove picture</string>
+   <string name="add_picture_menu_item">Add pic.</string>
+   <string name="remove_picture_menu_item">Rm. pic./audio</string>
    <string name="remove_all_menu_item">Remove all</string>
+   <string name="not_taken_by_me">This picture was not taken by me. Deleted only the audio tag.</string>
 
    <string name="preview_latitude_label">Latitude:</string>
    <string name="preview_longitude_label">Longitude:</string>
