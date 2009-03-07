@@ -71,7 +71,6 @@ import android.util.Log ;
 
 // Java utilities
 import java.text.DecimalFormat ;
-import java.text.SimpleDateFormat ;
 import java.util.Date ;
 
 //------------------------- CLASS DEFINITION ----------------------------
@@ -84,6 +83,11 @@ import java.util.Date ;
    coordinates are.
 */
 class GPSRecorder {
+
+/// This class is implemented as a singleton because there need be only
+/// one GPS listener shared across all the activities/modules of the
+/// photo manager application.
+private static GPSRecorder m_instance ;
 
 /// As seems to be the case for almost everything Android, we need a
 /// viable context to be able to interface with various parts of the
@@ -107,21 +111,29 @@ private Location m_location ;
 /// This class can draw the current GPS coordinates every time they
 /// change to the specified UI elements. Clients must directly set and
 /// unset these two public members.
-public TextView m_lat ;
-public TextView m_lon ;
+private TextView m_lat_view ;
+private TextView m_lon_view ;
 
 //-------------------------- INITIALIZATION -----------------------------
 
-/// The constructor expects to be passed a viable Android context. On
-/// instantiation, we create a new row in MediaStore.Audio.Media for the
-/// recording. If this row cannot be created, the recording will be
-/// aborted.
-public GPSRecorder(Context C)
+/// Private constructor because this is a singleton
+private GPSRecorder(Context C)
 {
    m_context = C ;
-   setup_listener(C) ;
+   setup_listener(m_context) ;
 }
 
+/// The singleton object's lone instance
+public final static GPSRecorder instance(Context C)
+{
+   if (m_instance == null)
+      m_instance = new GPSRecorder(C) ;
+
+   m_instance.m_context = C ;
+   return m_instance ;
+}
+
+/// Helper to properly setup the GPS listening service
 private void setup_listener(Context C)
 {
    try
@@ -150,7 +162,7 @@ private void setup_listener(Context C)
    catch (Exception e)
    {
       Log.e(null, "MVN: location manager fiasco", e) ;
-      shutdown_listener(C) ;
+      shutdown_listener() ;
       m_location = null ;
    }
 }
@@ -165,60 +177,74 @@ private class Listener implements LocationListener {
 
    public void onLocationChanged(Location L) {
       m_location = L ;
-      show_location(m_context) ;
+      show_location() ;
    }
 } // end of inner class GPSRecorder.Listener
 
+//-------------------------------- UI -----------------------------------
+
+/// Use the specified text controls for displaying the current location
+public void use_ui(TextView lat_view, TextView lon_view)
+{
+   m_lat_view = lat_view ;
+   m_lon_view = lon_view ;
+}
+
+/// Show the current GPS coordinates on the UI
+public void show_location()
+{
+   if (m_lat_view == null || m_lon_view == null)
+      return ;
+
+   if (m_location == null)
+   {
+      String unknown = m_context.getString(R.string.preview_gps_unknown) ;
+      m_lat_view.setText(unknown) ;
+      m_lon_view.setText(unknown) ;
+   }
+   else
+   {
+      DecimalFormat format = new DecimalFormat("###.######") ;
+      m_lat_view.setText(format.format(m_location.getLatitude())) ;
+      m_lon_view.setText(format.format(m_location.getLongitude())) ;
+   }
+}
+
 //----------------------------- CLEAN-UP --------------------------------
 
-public void shutdown_listener(Context C)
+/// Remove the GPS listener registered with Android
+public void shutdown_listener()
 {
    if (m_listener == null) // nothing to shutdown
       return ;
 
    LocationManager M =
-      (LocationManager) C.getSystemService(Context.LOCATION_SERVICE) ;
+      (LocationManager) m_context.getSystemService(Context.LOCATION_SERVICE) ;
    M.removeUpdates(m_listener) ;
    m_listener = null ;
 }
 
 //------------------------------ HELPERS --------------------------------
 
-// Returns true if the last known location is much older than the current
-// time.
+/// Returns true if the last known location is much older than the
+/// current time.
 public boolean stale(Date now)
 {
+   if (m_location == null)
+      return false ;
    return (now.getTime() - m_location.getTime()) > 300000 ; // 5 mins
 }
 
+/// Return the current latitude
 public double latitude()
 {
-   return m_location.getLatitude() ;
+   return (m_location == null) ? 0 : m_location.getLatitude() ;
 }
 
+/// Return the current longitude
 public double longitude()
 {
-   return m_location.getLongitude() ;
-}
-
-// Show the specified GPS coordinates on the UI
-public void show_location(Context C)
-{
-   if (m_lat == null || m_lon == null)
-      return ;
-
-   if (m_location == null)
-   {
-      String unknown = C.getString(R.string.preview_gps_unknown) ;
-      m_lat.setText(unknown) ;
-      m_lon.setText(unknown) ;
-   }
-   else
-   {
-      DecimalFormat format = new DecimalFormat("###.###") ;
-      m_lat.setText(format.format(m_location.getLatitude())) ;
-      m_lon.setText(format.format(m_location.getLongitude())) ;
-   }
+   return (m_location == null) ? 0 : m_location.getLongitude() ;
 }
 
 //-----------------------------------------------------------------------
