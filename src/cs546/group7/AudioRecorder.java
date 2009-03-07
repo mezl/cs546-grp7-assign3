@@ -65,15 +65,12 @@ import android.provider.MediaStore.Audio.Media ;
 import android.content.ContentResolver ;
 import android.content.ContentValues ;
 
-// Android utilities
-import android.net.Uri ;
-import android.content.ContentUris ;
-import android.util.Log ;
-
 // Android application and OS support
 import android.content.Context ;
 
 // Android utilities
+import android.net.Uri ;
+import android.content.ContentUris ;
 import android.util.Log ;
 
 // Java I/O support
