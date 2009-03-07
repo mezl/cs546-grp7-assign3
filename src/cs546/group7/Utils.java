@@ -93,13 +93,18 @@ import java.io.FilenameFilter ;
 class Utils {
 
 /// The photo manager's main screen passes the ID of the selected
-/// thumbnail to the display screen, which, in turn, passes it on to the
-/// picture and map tabs. This parameter is passed between the activities
-/// using Android's intent extras mechanism. To be able to properly store
-/// and retrieve this value, all the activities that need this parameter
-/// must agree on a suitable key/tag to use. The following string is that
-/// key.
+/// thumbnail to the display screen. This parameter is passed between the
+/// two activities using Android's intent extras mechanism. To be able to
+/// properly store and retrieve this value, both the activities must
+/// agree on a suitable key/tag to use. The following string is that key.
 public static final String EXTRAS_THUMBNAIL_ID = "extras_thumbnail_id" ;
+
+/// The display screen houses two tabs; one to show the selected or newly
+/// acquired picture and the other to show a map indicating where that
+/// picture was taken. The display screen uses the following key to pass
+/// the ID of the selected (or newly acquired) picture to its two
+/// sub-tabs.
+public static final String EXTRAS_PICTURE_ID = "extras_picture_id" ;
 
 //-------------------------- GPS COORDINATES ----------------------------
 
@@ -170,7 +175,7 @@ public final static long get_thumbnail_id(Activity A, long image_id)
 }
 
 /// Return the GPS coordinates corresponding to the specified image
-public final static LatLong gps_coords(Activity A, int image_id)
+public final static LatLong gps_coords(Activity A, long image_id)
 {
    try
    {

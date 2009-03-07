@@ -17,13 +17,16 @@
    * automatically tagged with the current GPS coordinates and may   *
    * optionally be tagged with audio.                                *
    *                                                                 *
-   * When a thumbnail is selected, it will be displayed in a new     *
-   * screen. The user will be able to play back any associated audio *
-   * and also display a map showing the GPS coordinates of where     *
-   * that picture was taken. Thus, the second screen of the photo    *
-   * manager application consists of two tabs: one for showing the   *
-   * picture and the other for showing the GPS coordinates of where  *
-   * that picture was taken.                                         *
+   * When a thumbnail is selected or when a new image is captured    *
+   * with the camera, it will be displayed in a new screen. The user *
+   * will be able to play back any associated audio and also display *
+   * a map showing the GPS coordinates of where that picture was     *
+   * taken.                                                          *
+   *                                                                 *
+   * Thus, the second screen of the photo manager application        *
+   * consists of two tabs: one for showing the picture and the other *
+   * for showing the GPS coordinates of where that picture was       *
+   * taken.                                                          *
    *                                                                 *
    * This file contains the code for the map tab, which shows a map  *
    * of the vicinity of where the picture was taken with a pin on    *
@@ -72,31 +75,42 @@ package cs546.group7 ;
 //------------------------------ IMPORTS --------------------------------
 
 // Google maps API
-import java.util.List;
+import com.google.android.maps.GeoPoint ;
+import com.google.android.maps.MapActivity ;
+import com.google.android.maps.MapController ;
+import com.google.android.maps.MapView ;
+import com.google.android.maps.Overlay ;
 
+// Android GPS support
+import android.location.Location ;
+
+// Android graphics support
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.location.Location;
+
+// Android application and OS support
 import android.os.Bundle;
 
-import com.google.android.maps.GeoPoint;
-import com.google.android.maps.MapActivity;
-import com.google.android.maps.MapController;
-import com.google.android.maps.MapView;
-import com.google.android.maps.Overlay;
+// Java containers
+import java.util.List;
 
 //---------------------- DISPLAY SCREEN MAP TAB -------------------------
 
 /**
    This class is part of the display screen of a photo manager
-   application that tags new pictures taken with the camera with the
-   current GPS coordinates and optional audio. When a picture's thumbnail
-   is selected, the entire image will be displayed and users will be
-   given the ability to play back any associated audio and view the GPS
-   coordinates of the picture on a map.
+   application that tags new or old pictures on the gPhone taken with
+   audio. Additionally, new pictures acquired through this application
+   will be tagged with the GPS coordinates of the current location.
+
+   When a picture's thumbnail is selected on the main screen or when a
+   new image is captured with the camera, the application will take users
+   to the display screen, which has two tabs: one for showing the
+   full-sized version of the selected (or captured) image and the other
+   for viewing the GPS coordinates of that picture (if available) on a
+   map.
 
    This class implements the tab that shows the map of the vicinity of
    where the picture was taken. A pin is drawn on the exact spot where
@@ -120,19 +134,20 @@ Location location = null;
 {
    super.onCreate(saved_state) ;
 
-   int image_id = Utils.full_picture_id(this,
-      getIntent().getExtras().getLong(Utils.EXTRAS_THUMBNAIL_ID)) ;
-
+   long image_id = getIntent().getExtras().getLong(Utils.EXTRAS_PICTURE_ID) ;
    Utils.LatLong gps = Utils.gps_coords(this, image_id) ;
    if (gps == null)
       setContentView(R.layout.map_empty_tab) ;
-   else {
+   else
+   {
       setContentView(R.layout.map_tab) ;
-      GoogleMapDisplay(gps);
+      display_map(gps);
    }
 }
 
-void GoogleMapDisplay(Utils.LatLong gps)
+//---------------------------- MAP DRAWING ------------------------------
+
+void display_map(Utils.LatLong gps)
 {
    mv = (MapView) findViewById(R.id.map);
    gp = new GeoPoint((int) (gps.latitude  * 1000000),
@@ -160,22 +175,22 @@ void GoogleMapDisplay(Utils.LatLong gps)
 protected class LocOverlay extends com.google.android.maps.Overlay {
 
 @Override
-public boolean draw(Canvas canvas, MapView mv, boolean shadow, long when)
+public boolean draw(Canvas canvas, MapView map_view, boolean shadow, long when)
 {
+   super.draw(canvas, map_view, shadow);
+
+   // Convert latitude and longitude to screen coordinates
+   Point screen = new Point();
+   mv.getProjection().toPixels(gp, screen);
+
    Paint paint = new Paint();
-
-   super.draw(canvas, mv, shadow);
-   // Converts lat/lon-Point to coordinates on the screen.
-   Point screenCoordsObj = new Point();
-   mv.getProjection().toPixels(gp, screenCoordsObj);
-
    paint.setStrokeWidth(1);
    paint.setARGB(255, 255, 255, 255);
    paint.setStyle(Paint.Style.STROKE);
 
    Bitmap bmp =
       BitmapFactory.decodeResource(getResources(), R.drawable.marker);
-   canvas.drawBitmap(bmp, screenCoordsObj.x, screenCoordsObj.y, paint);
+   canvas.drawBitmap(bmp, screen.x, screen.y, paint);
    return true;
 }
 
