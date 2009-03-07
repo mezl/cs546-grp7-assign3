@@ -133,6 +133,12 @@ public final static GPSRecorder instance(Context C)
    return m_instance ;
 }
 
+/// Just a convenient alias for retrieving the singleton instance
+public final static GPSRecorder create(Context C)
+{
+   return instance(C) ;
+}
+
 /// Helper to properly setup the GPS listening service
 private void setup_listener(Context C)
 {
@@ -162,7 +168,7 @@ private void setup_listener(Context C)
    catch (Exception e)
    {
       Log.e(null, "MVN: location manager fiasco", e) ;
-      shutdown_listener() ;
+      shutdown() ;
       m_location = null ;
    }
 }
@@ -213,7 +219,7 @@ public void show_location()
 //----------------------------- CLEAN-UP --------------------------------
 
 /// Remove the GPS listener registered with Android
-public void shutdown_listener()
+public void shutdown()
 {
    if (m_listener == null) // nothing to shutdown
       return ;

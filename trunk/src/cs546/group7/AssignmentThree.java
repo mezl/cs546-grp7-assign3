@@ -127,12 +127,15 @@ private AudioTagsDB m_db ;
    super.onCreate(saved_state) ;
    setContentView(R.layout.main) ;
 
+   // Setup the GPS listener
+   GPSRecorder.create(this) ;
+
+   // Open a connection to the audio tags database
    m_db = new AudioTagsDB(this) ;
    m_db.open() ;
 
-   final Context context = this ;
-
    // Setup the thumbnails grid
+   final Context context = this ; // for access inside anonymous click listener
    m_thumbnails_grid = (GridView) findViewById(R.id.thumbnails_grid) ;
    m_thumbnails_grid.setOnItemClickListener(
       new AdapterView.OnItemClickListener() {
@@ -144,18 +147,27 @@ private AudioTagsDB m_db ;
    display_thumbnails(m_thumbnails_grid) ;
 }
 
-/**
-   This method is called the first time the application's menu is
-   displayed. The code to setup the menu is pretty much boilerplate,
-   i.e., inflate the appropriate menu from an XML resource file.
-*/
+/// Called when the activity is resumed. In our case, we reconnect to the
+/// audio tags database.
+@Override protected void onResume()
+{
+   super.onResume() ;
+   if (m_db == null) {
+      m_db = new AudioTagsDB(this) ;
+      m_db.open() ;
+   }
+}
+
+/// This method is called the first time the application's menu is
+/// displayed. The code to setup the menu is pretty much boilerplate,
+/// i.e., inflate the appropriate menu from an XML resource file.
 @Override public boolean onCreateOptionsMenu(Menu menu)
 {
    getMenuInflater().inflate(R.menu.main_menu, menu) ;
    return true ;
 }
 
-//------------------------- LIFE-CYCLE EVENTS ---------------------------
+//----------------------------- CLEAN-UP --------------------------------
 
 /// Called when the activity ends. In our app, we should close the
 /// connection to the database.
@@ -166,14 +178,12 @@ private AudioTagsDB m_db ;
    super.onPause() ;
 }
 
-/// Called when the activity is resumed
-@Override protected void onResume()
+/// On final application close, we have to shutdown the GPS listener that
+/// we created during application start-up.
+@Override protected void onDestroy()
 {
-   super.onResume() ;
-   if (m_db == null) {
-      m_db = new AudioTagsDB(this) ;
-      m_db.open() ;
-   }
+   GPSRecorder.instance(this).shutdown() ;
+   super.onDestroy() ;
 }
 
 //--------------------------- MENU COMMANDS -----------------------------
@@ -232,34 +242,33 @@ private void remove_image(long thumbnail_id)
 // Remove all the images acquired by this application
 private void remove_all()
 {
-   int line = 0 ;
    try
    {
       String group_name = getString(R.string.group_name) ;
       String audio_file_name_pattern =
          getFilesDir().getPath() + File.separator + group_name + ".*\\.3gp" ;
-      Utils.unlink_all(audio_file_name_pattern) ; ++line ;
-      m_db.clear() ; ++line ;
+      Utils.unlink_all(audio_file_name_pattern) ;
+      m_db.clear() ;
 
       ContentResolver R = getContentResolver() ;
-      String where_clause = Audio.Media.TITLE + " LIKE '%" + group_name + "%'" ;
-      R.delete(Audio.Media.INTERNAL_CONTENT_URI, where_clause, null) ; ++line;
+      String where_clause = Audio.Media.TITLE + " LIKE '%" + group_name + "%'";
+      R.delete(Audio.Media.INTERNAL_CONTENT_URI, where_clause, null) ;
 
       // DEVNOTE: For some reason, the following means of deleting all
       // images from the media store doesn't work. It works fine for
       // audio, but not for images. As a workaround we delete all the
       // pictures one-by-one.
       /*
-      where_clause = Images.Media.DESCRIPTION + " LIKE '%" + group_name + "%'" ;
-      R.delete(Images.Media.EXTERNAL_CONTENT_URI, where_clause, null) ;++line;
+      where_clause = Images.Media.DESCRIPTION + " LIKE '%" + group_name + "%'";
+      R.delete(Images.Media.EXTERNAL_CONTENT_URI, where_clause, null) ;
       //*/
       Utils.delete_all_pictures(this, group_name) ;
 
-      display_thumbnails(m_thumbnails_grid) ;++line;
+      display_thumbnails(m_thumbnails_grid) ;
    }
    catch (Exception e)
    {
-      Utils.alert(this, "line ID = " + line) ;
+      Log.e(null, "MVN: something went wrong trying to remove all") ;
    }
 }
 
