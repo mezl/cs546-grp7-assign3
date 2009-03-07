@@ -221,32 +221,46 @@ private void remove_image(long thumbnail_id)
    }
 
    long image_id  = Utils.full_picture_id(this, thumbnail_id) ;
-   Uri  image_uri = ContentUris.withAppendedId(
-                       Images.Media.EXTERNAL_CONTENT_URI, image_id) ;
    m_db.delete_audio(m_db.get_audio_id(image_id)) ;
-   getContentResolver().delete(image_uri, null, null) ;
+   if (Utils.taken_by_me(this, image_id, getString(R.string.group_name)))
+      Utils.delete_picture(this, image_id) ;
+   else
+      Utils.notify(this, getString(R.string.not_taken_by_me)) ;
    display_thumbnails(m_thumbnails_grid) ;
 }
 
 // Remove all the images acquired by this application
 private void remove_all()
 {
-   /*
-   String group_name = getString(R.string.group_name) ;
-   String audio_file_name_pattern =
-      getFilesDir().getPath() + File.separator + group_name + ".*\\.3gp$" ;
-   Utils.unlink_all(audio_file_name_pattern) ;
-   m_db.clear() ;
+   int line = 0 ;
+   try
+   {
+      String group_name = getString(R.string.group_name) ;
+      String audio_file_name_pattern =
+         getFilesDir().getPath() + File.separator + group_name + ".*\\.3gp" ;
+      Utils.unlink_all(audio_file_name_pattern) ; ++line ;
+      m_db.clear() ; ++line ;
 
-   ContentResolver R = getContentResolver() ;
-   String where_clause = Audio.Media.TITLE + " LIKE '%" + group_name + "%'" ;
-   R.delete(Audio.Media.INTERNAL_CONTENT_URI, where_clause, null) ;
+      ContentResolver R = getContentResolver() ;
+      String where_clause = Audio.Media.TITLE + " LIKE '%" + group_name + "%'" ;
+      R.delete(Audio.Media.INTERNAL_CONTENT_URI, where_clause, null) ; ++line;
 
-   where_clause = Images.Media.TITLE + " LIKE '%" + group_name + "%'" ;
-   R.delete(Images.Media.EXTERNAL_CONTENT_URI, where_clause, null) ;
+      // DEVNOTE: For some reason, the following means of deleting all
+      // images from the media store doesn't work. It works fine for
+      // audio, but not for images. As a workaround we delete all the
+      // pictures one-by-one.
+      /*
+      where_clause = Images.Media.DESCRIPTION + " LIKE '%" + group_name + "%'" ;
+      R.delete(Images.Media.EXTERNAL_CONTENT_URI, where_clause, null) ;++line;
+      //*/
+      Utils.delete_all_pictures(this, group_name) ;
 
-   display_thumbnails(m_thumbnails_grid) ;
-   //*/
+      display_thumbnails(m_thumbnails_grid) ;++line;
+   }
+   catch (Exception e)
+   {
+      Utils.alert(this, "line ID = " + line) ;
+   }
 }
 
 //------------------------- IMAGE THUMBNAILS ----------------------------

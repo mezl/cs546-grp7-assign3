@@ -85,9 +85,6 @@ import java.io.OutputStream ;
 import java.io.File ;
 import java.io.FilenameFilter ;
 
-// Java utilities
-import java.util.regex.* ;
-
 //------------------------- CLASS DEFINITION ----------------------------
 
 /**
@@ -201,6 +198,29 @@ public final static LatLong gps_coords(Activity A, int image_id)
    return null ;
 }
 
+/// Check if the specified image was acquired by this application by
+/// matching the image's title against the supplied tag.
+public final static boolean taken_by_me(Activity A, long image_id, String tag)
+{
+   try
+   {
+      String[] columns = new String[] {
+         Images.Media._ID,
+      } ;
+      String where_clause = Images.Media.TITLE + " LIKE '%" + tag + "%'" ;
+      Cursor C = A.managedQuery(Images.Media.EXTERNAL_CONTENT_URI,
+                                columns, where_clause, null, null) ;
+      boolean by_me = (C != null && C.getCount() > 0) ;
+      C.close() ;
+      return by_me ;
+   }
+   catch (Exception e)
+   {
+      Log.e(null, "MVN: unable to query image " + image_id, e) ;
+      return false ;
+   }
+}
+
 /// Delete a picture and its thumbnails given its URI in string form
 public final static void delete_picture(Activity A, String uri)
 {
@@ -210,6 +230,54 @@ public final static void delete_picture(Activity A, String uri)
 /// Delete a picture and its thumbnails given its ID
 public final static void delete_picture(Activity A, long id)
 {
+   A.getContentResolver().delete(ContentUris.withAppendedId(
+      Images.Media.EXTERNAL_CONTENT_URI, id), null, null) ;
+}
+
+/// Delete all the pictures in the Android MediaStore whose titles match
+/// the supplied pattern.
+public final static void delete_all_pictures(Activity A, String pattern)
+{
+   try
+   {
+      String[] columns = new String[] {
+         Images.Media._ID,
+      } ;
+      String where_clause = Images.Media.TITLE + " LIKE '%" + pattern + "%'" ;
+      Cursor C = A.managedQuery(Images.Media.EXTERNAL_CONTENT_URI,
+                                columns, where_clause, null, null) ;
+      int[] image_ids = extract_ids_from_cursor(C) ;
+      C.close() ;
+
+      if (image_ids == null)
+         return ;
+      for (int i = 0; i < image_ids.length; ++i)
+         delete_picture(A, image_ids[i]) ;
+   }
+   catch (Exception e)
+   {
+      Log.e(null,
+            "MVN: unable to get images with titles matching " + pattern, e) ;
+   }
+}
+
+/// A helper routine that returns the image IDs held by the supplied
+/// cursor.
+///
+/// WARNING: This routine is not a generic means of extracting database
+/// cursor fields to an array. It is very specific to this photo manager
+/// application and is meant to be used only by the delete_all_pictures
+/// function defined above.
+private final static int[] extract_ids_from_cursor(Cursor C)
+{
+   if (C == null || C.getCount() <= 0)
+      return null ;
+
+   int[] ids = new int[C.getCount()] ;
+   C.moveToFirst() ;
+   for (int i = 0; i < ids.length; ++i, C.moveToNext())
+      ids[i] = C.getInt(0) ;
+   return ids ;
 }
 
 /// Start the activity that displays the selected picture and allows
@@ -299,14 +367,14 @@ public final static void unlink_all(final String glob)
 
    File dir = new File(glob.substring(0, last_sep)) ;
    String[] list = dir.list(new FilenameFilter() {
-         private Pattern regex = Pattern.compile(glob.substring(last_sep + 1));
+         private String pattern = new String(glob.substring(last_sep + 1));
          public  boolean accept(File dir, String file_name) {
-            return regex.matcher(new File(file_name).getName()).matches() ;
+            return file_name.matches(pattern) ;
          }
       }) ;
 
    for (int i = 0; i < list.length; ++i)
-      unlink(list[i]) ;
+      unlink(dir.getPath() + File.separator + list[i]) ;
 }
 
 /// Copy the named file byte-by-byte to the supplied output stream
