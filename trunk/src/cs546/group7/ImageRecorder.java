@@ -57,9 +57,6 @@ package cs546.group7 ;
 
 //------------------------------ IMPORTS --------------------------------
 
-// Android GPS support
-import android.location.* ;
-
 // Android camera support
 import android.hardware.Camera ;
 
@@ -121,8 +118,7 @@ private String m_new_uri ;
 
 // In order to tag each image with the current GPS coordinates, we need
 // the following beasties:
-private LocationListener m_location_listener ;
-private Location         m_location ;
+private GPSRecorder m_gps ;
 
 //-------------------------- INITIALIZATION -----------------------------
 
@@ -140,7 +136,7 @@ private Location         m_location ;
 
    setup_camera_preview() ;
    setup_location_listener() ;
-   show_location(m_location) ;
+   show_location() ;
    setup_accept_reject_buttons() ;
 }
 
@@ -154,34 +150,9 @@ private void setup_camera_preview()
 
 private void setup_location_listener()
 {
-   try
-   {
-      LocationManager M =
-         (LocationManager) getSystemService(Context.LOCATION_SERVICE) ;
-
-      Criteria C = new Criteria() ;
-      C.setAccuracy(Criteria.ACCURACY_FINE) ;
-      C.setAltitudeRequired(false) ;
-      C.setBearingRequired(false) ;
-      C.setSpeedRequired(false) ;
-      C.setCostAllowed(false) ;
-      C.setPowerRequirement(Criteria.POWER_MEDIUM) ;
-
-      String provider = M.getBestProvider(C, true) ;
-      if (provider == null) {
-         Log.e(null, "MVN: unable to obtain a GPS location provider") ;
-         Utils.notify(this, getString(R.string.no_gps_provider)) ;
-         return ;
-      }
-      m_location_listener = new GPSListener() ;
-      M.requestLocationUpdates(provider, 60000, 100, m_location_listener) ;
-   }
-   catch (Exception e)
-   {
-      Log.e(null, "MVN: location manager fiasco", e) ;
-      shutdown_location_listener() ;
-      m_location = null ;
-   }
+   m_gps = new GPSRecorder(this) ;
+   m_gps.m_lat = (TextView) findViewById(R.id.preview_latitude) ;
+   m_gps.m_lon = (TextView) findViewById(R.id.preview_longitude) ;
 }
 
 private void setup_accept_reject_buttons()
@@ -224,31 +195,21 @@ private void setup_accept_reject_buttons()
 {
    if (m_new_uri != null) // picture taken and successfully stored in database
    {
-      if (m_location == null || stale(m_location, new Date()))
+      if (m_gps.stale(new Date()))
          //update(m_new_uri, 34.021124, -118.287553) ;
          ; // don't show incorrect coordinates
       else
-         update(m_new_uri,
-                m_location.getLatitude(), m_location.getLongitude()) ;
+         update(m_new_uri, m_gps.latitude(), m_gps.longitude()) ;
    }
+   m_gps.m_lat = null ;
+   m_gps.m_lon = null ;
    super.onPause() ;
 }
 
 @Override protected void onDestroy()
 {
-   shutdown_location_listener() ;
+   m_gps.shutdown_listener(this) ;
    super.onDestroy() ;
-}
-
-private void shutdown_location_listener()
-{
-   if (m_location_listener == null) // nothing to shutdown
-      return ;
-
-   LocationManager M =
-      (LocationManager) getSystemService(Context.LOCATION_SERVICE) ;
-   M.removeUpdates(m_location_listener) ;
-   m_location_listener = null ;
 }
 
 //-------------------------- KEYBOARD EVENTS ----------------------------
@@ -377,42 +338,10 @@ private void update(String uri, long date_taken)
 
 //---------------------------- GPS HELPERS ------------------------------
 
-// This inner class implements a listener that responds to GPS events
-private class GPSListener implements LocationListener {
-   public void onProviderEnabled(String provider) {}
-   public void onProviderDisabled(String provider){}
-   public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-   public void onLocationChanged(Location L) {
-      m_location = L ;
-      show_location(L) ;
-   }
-} // end of inner class ImageRecorder.GPSListener
-
-// Returns true if the last known location is much older than the current
-// time.
-private boolean stale(Location last_known_location, Date now)
-{
-   return (now.getTime() - last_known_location.getTime()) > 300000 ; // 5 mins
-}
-
 // Show the specified GPS coordinates on the UI
-private void show_location(Location L)
+private void show_location()
 {
-   TextView lat = (TextView) findViewById(R.id.preview_latitude) ;
-   TextView lon = (TextView) findViewById(R.id.preview_longitude) ;
-   if (L == null)
-   {
-      String unknown = getString(R.string.preview_gps_unknown) ;
-      lat.setText(unknown) ;
-      lon.setText(unknown) ;
-   }
-   else
-   {
-      DecimalFormat format = new DecimalFormat("###.###") ;
-      lat.setText(format.format(L.getLatitude())) ;
-      lon.setText(format.format(L.getLongitude())) ;
-   }
+   m_gps.show_location(this) ;
 }
 
 // Adds GPS location data to the image captured by the camera
