@@ -94,7 +94,6 @@ import android.os.Bundle ;
 import android.util.Log ;
 
 // Java utilities
-import java.text.DecimalFormat ;
 import java.text.SimpleDateFormat ;
 import java.util.Date ;
 
@@ -136,7 +135,6 @@ private GPSRecorder m_gps ;
 
    setup_camera_preview() ;
    setup_location_listener() ;
-   show_location() ;
    setup_accept_reject_buttons() ;
 }
 
@@ -150,9 +148,10 @@ private void setup_camera_preview()
 
 private void setup_location_listener()
 {
-   m_gps = new GPSRecorder(this) ;
-   m_gps.m_lat = (TextView) findViewById(R.id.preview_latitude) ;
-   m_gps.m_lon = (TextView) findViewById(R.id.preview_longitude) ;
+   m_gps = GPSRecorder.instance(this) ;
+   m_gps.use_ui((TextView) findViewById(R.id.preview_latitude),
+                (TextView) findViewById(R.id.preview_longitude)) ;
+   m_gps.show_location() ;
 }
 
 private void setup_accept_reject_buttons()
@@ -201,15 +200,23 @@ private void setup_accept_reject_buttons()
       else
          update(m_new_uri, m_gps.latitude(), m_gps.longitude()) ;
    }
-   m_gps.m_lat = null ;
-   m_gps.m_lon = null ;
+   m_gps.use_ui(null, null) ;
    super.onPause() ;
 }
 
 @Override protected void onDestroy()
 {
-   m_gps.shutdown_listener(this) ;
+   m_gps.shutdown_listener() ;
    super.onDestroy() ;
+}
+
+// Adds GPS location data to the image captured by the camera
+private void update(String uri, double latitude, double longitude)
+{
+   ContentValues cv = new ContentValues(2) ;
+   cv.put(Media.LATITUDE, latitude) ;
+   cv.put(Media.LONGITUDE, longitude) ;
+   getContentResolver().update(Uri.parse(uri), cv, null, null) ;
 }
 
 //-------------------------- KEYBOARD EVENTS ----------------------------
@@ -335,23 +342,6 @@ private void update(String uri, long date_taken)
 }
 
 } // end of inner class ImageRecorder.ImageCaptureCallback
-
-//---------------------------- GPS HELPERS ------------------------------
-
-// Show the specified GPS coordinates on the UI
-private void show_location()
-{
-   m_gps.show_location(this) ;
-}
-
-// Adds GPS location data to the image captured by the camera
-private void update(String uri, double latitude, double longitude)
-{
-   ContentValues cv = new ContentValues(2) ;
-   cv.put(Media.LATITUDE, latitude) ;
-   cv.put(Media.LONGITUDE, longitude) ;
-   getContentResolver().update(Uri.parse(uri), cv, null, null) ;
-}
 
 //-----------------------------------------------------------------------
 
