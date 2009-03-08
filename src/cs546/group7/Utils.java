@@ -62,6 +62,7 @@ import android.app.AlertDialog ;
 // Android content provider support
 import android.provider.MediaStore.Images ;
 import android.provider.MediaStore.Audio ;
+import android.content.ContentResolver ;
 
 // Android networking support
 import android.net.Uri ;
@@ -322,6 +323,51 @@ public final static String get_audio_file_name(Activity A, long audio_id)
       Log.e(null, "MVN: unable to retrieve audio ID " + audio_id, e) ;
    }
    return null ;
+}
+
+//------------------------ DATABASE UTILITIES ---------------------------
+
+/// Remove a picture along with its audio tag
+public final static
+void nuke_picture(Activity A, long image_id, AudioTagsDB audio_tags_db)
+{
+   audio_tags_db.delete_audio(audio_tags_db.get_audio_id(image_id)) ;
+   if (taken_by_me(A, image_id, A.getString(R.string.group_name)))
+      delete_picture(A, image_id) ;
+   else
+      notify(A, A.getString(R.string.not_taken_by_me)) ;
+}
+
+/// Remove all the images acquired by this application along with their
+/// audio tags.
+public final static void nuke_all(Activity A, AudioTagsDB audio_tags_db)
+{
+   try
+   {
+      String group_name = A.getString(R.string.group_name) ;
+      String audio_file_name_pattern =
+         A.getFilesDir().getPath() + File.separator + group_name + ".*\\.3gp" ;
+      unlink_all(audio_file_name_pattern) ;
+      audio_tags_db.clear() ;
+
+      ContentResolver R = A.getContentResolver() ;
+      String where_clause = Audio.Media.TITLE + " LIKE '%" + group_name + "%'";
+      R.delete(Audio.Media.INTERNAL_CONTENT_URI, where_clause, null) ;
+
+      // DEVNOTE: For some reason, the following means of deleting all
+      // images from the media store doesn't work. It works fine for
+      // audio, but not for images. As a workaround we delete all the
+      // pictures one-by-one.
+      /*
+      where_clause = Images.Media.TITLE + " LIKE '%" + group_name + "%'";
+      R.delete(Images.Media.EXTERNAL_CONTENT_URI, where_clause, null) ;
+      //*/
+      delete_all_pictures(A, group_name) ;
+   }
+   catch (Exception e)
+   {
+      Log.e(null, "MVN: something went wrong trying to remove all") ;
+   }
 }
 
 //------------------------- UI NOTIFICATIONS ----------------------------
