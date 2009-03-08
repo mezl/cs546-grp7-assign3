@@ -94,8 +94,8 @@ import android.graphics.Point;
 // Android application and OS support
 import android.os.Bundle;
 
-// Java containers
-import java.util.List;
+// Android utilities
+import android.util.Log ;
 
 //---------------------- DISPLAY SCREEN MAP TAB -------------------------
 
@@ -118,70 +118,72 @@ import java.util.List;
 */
 public class MapTab extends MapActivity {
 
-MapView mv = null;
-MapController mc = null;
-GeoPoint gp = null;
-Location location = null;
-
 //-------------------------- INITIALIZATION -----------------------------
 
 /**
    This method is called when the activity is first created. It is akin
    to the "main" function in normal desktop applications.
 */
-
 @Override public void onCreate(Bundle saved_state)
 {
    super.onCreate(saved_state) ;
 
    long image_id = getIntent().getExtras().getLong(Utils.EXTRAS_PICTURE_ID) ;
    Utils.LatLong gps = Utils.gps_coords(this, image_id) ;
-   if (gps == null)
+   if (gps == null) // picture displayed on picture tab has no location data
       setContentView(R.layout.map_empty_tab) ;
    else
    {
       setContentView(R.layout.map_tab) ;
-      display_map(gps);
+      setup_map(gps);
    }
 }
 
-//---------------------------- MAP DRAWING ------------------------------
-
-void display_map(Utils.LatLong gps)
+void setup_map(Utils.LatLong gps)
 {
-   mv = (MapView) findViewById(R.id.map);
-   gp = new GeoPoint((int) (gps.latitude  * 1000000),
-                     (int) (gps.longitude * 1000000));
    try
    {
-      mv.setTraffic(false);
-      mv.setSatellite(true);
-      mv.setStreetView(false);
-      mc = mv.getController();
-      mc.setCenter(gp);
-      mc.setZoom(15);
+      MapView M = (MapView) findViewById(R.id.map);
+      M.setSatellite(true);
 
-      // Add a location mark
-      LocOverlay myLocationOverlay = new LocOverlay();
-      List<Overlay> list = mv.getOverlays();
-      list.add(myLocationOverlay);
+      GeoPoint picture_location =
+         new GeoPoint((int) (gps.latitude  * 1000000),
+                      (int) (gps.longitude * 1000000));
+      M.getOverlays().add(new LocationMarker(picture_location));
+
+      MapController C = M.getController();
+      C.setCenter(picture_location);
+      C.setZoom(15);
    }
-   catch (RuntimeException e)
+   catch (Exception e)
    {
+      Log.e(null, "MVN: map setup bombed", e) ;
    }
 }
 
-/* Class overload draw method plots a marker on the map */
-protected class LocOverlay extends com.google.android.maps.Overlay {
+//-------------------------- LOCATION MARKER ----------------------------
 
+/// This inner class draws a pin on the specified location
+private class LocationMarker extends Overlay {
+
+// Location to draw the marker on
+private GeoPoint m_location ;
+
+LocationMarker(GeoPoint location)
+{
+   m_location = location ;
+}
+
+/// This method implements the drawing routine that is responsible for
+/// putting the location marker's pin on the location this marker is
+/// meant to highlight.
 @Override
 public boolean draw(Canvas canvas, MapView map_view, boolean shadow, long when)
 {
    super.draw(canvas, map_view, shadow);
 
-   // Convert latitude and longitude to screen coordinates
-   Point screen = new Point();
-   mv.getProjection().toPixels(gp, screen);
+   Point location_screen = new Point() ; // m_location in screen coordinates
+   map_view.getProjection().toPixels(m_location, location_screen);
 
    Paint paint = new Paint();
    paint.setStrokeWidth(1);
@@ -190,11 +192,11 @@ public boolean draw(Canvas canvas, MapView map_view, boolean shadow, long when)
 
    Bitmap bmp =
       BitmapFactory.decodeResource(getResources(), R.drawable.marker);
-   canvas.drawBitmap(bmp, screen.x, screen.y, paint);
+   canvas.drawBitmap(bmp, location_screen.x, location_screen.y, paint);
    return true;
 }
 
-} // end of inner class MapTab.LocOverlay
+} // end of inner class MapTab.LocationMarker
 
 //----------------------- MAPS API REQUIREMENTS -------------------------
 
