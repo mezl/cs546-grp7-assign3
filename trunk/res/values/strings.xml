@@ -92,9 +92,10 @@
      Sorry, location data is either stale or unavailable
    </string>
 
-   <string name="picture_tab_label"><big>Picture</big></string>
-   <string name="play_audio_tag_menu_item">Play Audio Tag</string>
-   <string name="record_audio_tag_menu_item">Record Audio Tag</string>
+   <string name="play_audio_tag_menu_item">Play Audio</string>
+   <string name="record_audio_tag_menu_item">Record Audio</string>
+   <string name="remove_audio_tag_menu_item">Remove Audio</string>
+
    <string name="record_audio_msg">
      Speak into microphone and press center keypad button when done
    </string>
@@ -114,6 +115,7 @@
      Sorry, unable to create the audio player.
    </string>
 
+   <string name="picture_tab_label"><big>Picture</big></string>
    <string name="map_tab_label"><big>Map</big></string>
    <string name="map_empty_msg">
      <big>Sorry, the selected picture does not have any associated location data.</big>

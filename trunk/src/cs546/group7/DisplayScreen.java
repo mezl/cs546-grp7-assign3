@@ -225,6 +225,26 @@ private void setup_map_tab(final TabHost H, long picture_id)
       case R.id.record_audio_tag:
          record_audio_tag() ;
          return true ;
+
+      case R.id.remove_audio_tag:
+         m_db.delete_audio(m_db.get_audio_id(m_full_picture_id)) ;
+         return true ;
+
+      case R.id.add_picture:
+         startActivity(new Intent(this, ImageRecorder.class)) ;
+         finish() ;
+         return true ;
+
+      case R.id.remove_picture:
+         Utils.nuke_picture(this, m_full_picture_id, m_db) ;
+         finish() ;
+         return true ;
+
+      case R.id.remove_all:
+         Utils.nuke_all(this, m_db) ;
+         //startActivity(new Intent(this, ImageRecorder.class)) ;
+         finish() ;
+         return true ;
    }
    return super.onOptionsItemSelected(item) ;
 }

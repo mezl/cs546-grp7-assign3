@@ -77,7 +77,6 @@ import android.view.View ;
 // Android content-provider support
 import android.provider.MediaStore.Audio ;
 import android.provider.MediaStore.Images ;
-import android.content.ContentResolver ;
 
 // Android database support
 import android.database.Cursor ;
@@ -92,9 +91,6 @@ import android.os.Bundle ;
 import android.content.ContentUris ;
 import android.net.Uri ;
 import android.util.Log ;
-
-// Java I/O support
-import java.io.File ;
 
 //--------------------- APPLICATION'S MAIN SCREEN -----------------------
 
@@ -200,7 +196,7 @@ private AudioTagsDB m_db ;
    switch (item.getItemId())
    {
       case R.id.add_picture:
-         capture_image() ;
+         startActivity(new Intent(this, ImageRecorder.class)) ;
          return true ;
 
       case R.id.remove_picture:
@@ -208,18 +204,11 @@ private AudioTagsDB m_db ;
          return true ;
 
       case R.id.remove_all:
-         remove_all() ;
+         Utils.nuke_all(this, m_db) ;
+         display_thumbnails(m_thumbnails_grid) ;
          return true ;
    }
    return super.onOptionsItemSelected(item) ;
-}
-
-// Use the on-board camera to get a new image and store it in the
-// database along with the current GPS coordinates. This is handled by a
-// separate activity.
-private void capture_image()
-{
-   startActivity(new Intent(this, ImageRecorder.class)) ;
 }
 
 // Remove the image corresponding to the selected thumbnail
@@ -231,45 +220,8 @@ private void remove_image(long thumbnail_id)
    }
 
    long image_id  = Utils.full_picture_id(this, thumbnail_id) ;
-   m_db.delete_audio(m_db.get_audio_id(image_id)) ;
-   if (Utils.taken_by_me(this, image_id, getString(R.string.group_name)))
-      Utils.delete_picture(this, image_id) ;
-   else
-      Utils.notify(this, getString(R.string.not_taken_by_me)) ;
+   Utils.nuke_picture(this, image_id, m_db) ;
    display_thumbnails(m_thumbnails_grid) ;
-}
-
-// Remove all the images acquired by this application
-private void remove_all()
-{
-   try
-   {
-      String group_name = getString(R.string.group_name) ;
-      String audio_file_name_pattern =
-         getFilesDir().getPath() + File.separator + group_name + ".*\\.3gp" ;
-      Utils.unlink_all(audio_file_name_pattern) ;
-      m_db.clear() ;
-
-      ContentResolver R = getContentResolver() ;
-      String where_clause = Audio.Media.TITLE + " LIKE '%" + group_name + "%'";
-      R.delete(Audio.Media.INTERNAL_CONTENT_URI, where_clause, null) ;
-
-      // DEVNOTE: For some reason, the following means of deleting all
-      // images from the media store doesn't work. It works fine for
-      // audio, but not for images. As a workaround we delete all the
-      // pictures one-by-one.
-      /*
-      where_clause = Images.Media.DESCRIPTION + " LIKE '%" + group_name + "%'";
-      R.delete(Images.Media.EXTERNAL_CONTENT_URI, where_clause, null) ;
-      //*/
-      Utils.delete_all_pictures(this, group_name) ;
-
-      display_thumbnails(m_thumbnails_grid) ;
-   }
-   catch (Exception e)
-   {
-      Log.e(null, "MVN: something went wrong trying to remove all") ;
-   }
 }
 
 //------------------------- IMAGE THUMBNAILS ----------------------------
